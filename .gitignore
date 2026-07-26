@@ -1,11 +1,12 @@
-# source & scratch assets (not deployed)
-product.jpg
-04220042.jpg
-mood-1.jpg
-mood-2.jpg
-mood-3.png
-USER-1.png
-USER26.png
-USER27.png
-crop_*.png
-_*.png
+# source & scratch assets in repo root (deployed copies live in img/)
+/product.jpg
+/04220042.jpg
+/mood-1.jpg
+/mood-2.jpg
+/mood-3.png
+/USER-1.png
+/USER26.png
+/USER27.png
+/crop_*.png
+/_*.png
+.DS_Store
