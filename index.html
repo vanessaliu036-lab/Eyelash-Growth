@@ -229,6 +229,27 @@ footer p{color:#6b625a}
   .life-grid{grid-template-columns:1fr 1fr}.life-item.tall{grid-row:auto}
 }
 @media(max-width:560px){.life-grid{grid-template-columns:1fr}}
+
+/* ===== Carousel (before/after + lifestyle) ===== */
+.carousel{position:relative;max-width:1100px;margin:40px auto 0}
+.car-viewport{overflow:hidden}
+.car-track{display:flex;transition:transform .65s cubic-bezier(.22,.61,.36,1);will-change:transform}
+.car-slide{min-width:100%;display:flex;justify-content:center;padding:0 12px}
+.rc,.ls{margin:0;text-align:center}
+.rc img{max-width:min(86vw,440px);width:auto;height:auto;max-height:66vh;display:block;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:2px}
+.ls img{max-width:min(88vw,600px);width:auto;height:auto;max-height:70vh;display:block;margin:0 auto;border-radius:2px}
+.rc figcaption,.ls figcaption{margin-top:18px}
+.rc figcaption small,.ls figcaption small{display:block;text-transform:uppercase;letter-spacing:.18em;font-size:10px;color:var(--muted);margin-bottom:6px}
+.rc figcaption strong,.ls figcaption strong{font-family:"Italiana",Georgia,serif;font-weight:400;font-size:24px}
+.car-arrow{position:absolute;top:44%;transform:translateY(-50%);width:46px;height:46px;border:1px solid var(--ink);background:rgba(251,250,247,.72);backdrop-filter:blur(6px);color:var(--ink);cursor:pointer;font-size:20px;line-height:1;z-index:3;transition:background .25s ease,transform .25s ease}
+.car-arrow:hover{background:var(--ink);color:var(--paper)}
+.car-arrow.prev{left:6px}.car-arrow.next{right:6px}
+.car-dots{display:flex;gap:9px;justify-content:center;margin-top:26px}
+.car-dots button{width:8px;height:8px;border-radius:50%;border:0;background:var(--line);cursor:pointer;padding:0;transition:background .25s ease,transform .25s ease}
+.car-dots button.active{background:var(--accent);transform:scale(1.25)}
+.results-section .disclaimer{text-align:center;margin-top:30px}
+@media(max-width:560px){.car-arrow{width:40px;height:40px;font-size:18px}}
+@media (prefers-reduced-motion: reduce){.car-track{transition:none}}
 </style>
 </head>
 <body class="loading">
@@ -271,19 +292,15 @@ footer p{color:#6b625a}
     <div><div class="eyebrow">Before & after</div><h2>Real lashes.<br>Real progress.</h2></div>
     <p>See visible changes in lash length, density, and overall appearance with consistent use. Individual results may vary depending on your natural lash cycle and condition.</p>
   </div>
-  <div class="result-grid">
-    <article class="result-card">
-      <img src="img/user-1.jpg" alt="Before and after eyelash comparison one">
-      <div class="result-meta"><small>Real client · 8 weeks</small><strong>Fuller, longer lashes</strong></div>
-    </article>
-    <article class="result-card">
-      <img src="img/user-2.jpg" alt="Before and after eyelash comparison two">
-      <div class="result-meta"><small>Real client · 6 weeks</small><strong>Visible density</strong></div>
-    </article>
-    <article class="result-card">
-      <img src="img/user-3.jpg" alt="Before and after eyelash comparison three">
-      <div class="result-meta"><small>Real client · 8 weeks</small><strong>Stronger lash line</strong></div>
-    </article>
+  <div class="carousel result-carousel" data-carousel data-autoplay="5000">
+    <div class="car-viewport"><div class="car-track">
+      <div class="car-slide"><figure class="rc"><img src="img/user-1.jpg" alt="Client transformation, fuller longer lashes"><figcaption><small>Real client · 8 weeks</small><strong>Fuller, longer lashes</strong></figcaption></figure></div>
+      <div class="car-slide"><figure class="rc"><img src="img/user-2.jpg" alt="Client transformation, visible density"><figcaption><small>Real client · 6 weeks</small><strong>Visible density</strong></figcaption></figure></div>
+      <div class="car-slide"><figure class="rc"><img src="img/user-3.jpg" alt="Client transformation, stronger lash line"><figcaption><small>Real client · 8 weeks</small><strong>Stronger lash line</strong></figcaption></figure></div>
+    </div></div>
+    <button class="car-arrow prev" aria-label="Previous">&#8249;</button>
+    <button class="car-arrow next" aria-label="Next">&#8250;</button>
+    <div class="car-dots"></div>
   </div>
   <p class="disclaimer">Individual results may vary. For best results, use consistently morning and evening.</p>
 </section>
@@ -360,12 +377,18 @@ footer p{color:#6b625a}
 
 <section class="life" aria-label="Lifestyle gallery">
   <div class="life-head"><div class="eyebrow">The everyday ritual</div><h2>Natural beauty, lived-in.</h2></div>
-  <div class="life-grid">
-    <div class="life-item tall"><img src="img/life-portrait.jpg" alt="Natural beauty portrait"></div>
-    <div class="life-item"><img src="img/life-tray.jpg" alt="Morning ritual"><div class="life-cap"><small>Morning light</small>A daily ritual.</div></div>
-    <div class="life-item"><img src="img/life-lash.jpg" alt="Applying serum to lashes"><div class="life-cap"><small>One clean line</small>Every day.</div></div>
-    <div class="life-item"><img src="img/life-vanity.jpg" alt="A quiet moment"><div class="life-cap"><small>A quiet moment</small>Just for you.</div></div>
-    <div class="life-item"><img src="img/life-flatlay.jpg" alt="Product flatlay"><div class="life-cap"><small>Everyday care</small>Simple by design.</div></div>
+  <div class="carousel life-carousel" data-carousel data-autoplay="4200">
+    <div class="car-viewport"><div class="car-track">
+      <div class="car-slide"><figure class="ls"><img src="img/life-portrait.jpg" alt="Natural beauty portrait"><figcaption><small>Naturally you</small>Longer. Fuller. Effortless.</figcaption></figure></div>
+      <div class="car-slide"><figure class="ls"><img src="img/life-tray.jpg" alt="Morning ritual"><figcaption><small>Morning light</small>A daily ritual.</figcaption></figure></div>
+      <div class="car-slide"><figure class="ls"><img src="img/life-lash.jpg" alt="Applying serum to lashes"><figcaption><small>One clean line</small>Every day.</figcaption></figure></div>
+      <div class="car-slide"><figure class="ls"><img src="img/life-vanity.jpg" alt="A quiet moment"><figcaption><small>A quiet moment</small>Just for you.</figcaption></figure></div>
+      <div class="car-slide"><figure class="ls"><img src="img/life-flatlay.jpg" alt="Product flatlay"><figcaption><small>Everyday care</small>Simple by design.</figcaption></figure></div>
+      <div class="car-slide"><figure class="ls"><img src="img/life-suit.jpg" alt="Effortless natural style"><figcaption><small>Confidence</small>Beauty that looks like you.</figcaption></figure></div>
+    </div></div>
+    <button class="car-arrow prev" aria-label="Previous">&#8249;</button>
+    <button class="car-arrow next" aria-label="Next">&#8250;</button>
+    <div class="car-dots"></div>
   </div>
 </section>
 
@@ -391,7 +414,7 @@ footer p{color:#6b625a}
 
 <footer>
   <div><div class="brand">LA SHAUNNIE</div><p>Confidence starts with every glance.</p></div>
-  <div><p>Instagram · Before & After · Contact · Shipping · Privacy</p><p>© 2026 LA SHAUNNIE. All rights reserved.</p></div>
+  <div><p>Instagram · Contact · Shipping · Privacy</p><p>© 2026 LA SHAUNNIE. All rights reserved.</p></div>
 </footer>
 <script>
 (function(){
@@ -401,12 +424,34 @@ footer p{color:#6b625a}
   });
   var header=document.querySelector('header');
   window.addEventListener('scroll',function(){ header.classList.toggle('scrolled',window.scrollY>60); },{passive:true});
-  var sel='.intro > *, .editorial, .results-head, .result-card, .cycle-copy > *, .ingredient-copy > *, .split-copy > *, .science-head > *, .ingredient, .gallery > *, .product-copy > *, .faq > *, footer > *';
+  var sel='.intro > *, .editorial, .results-head, .carousel, .cycle-copy > *, .ingredient-copy > *, .split-copy > *, .science-head > *, .ingredient, .confidence-copy > *, .life-head > *, .product-copy > *, .faq > *, footer > *';
   document.querySelectorAll(sel).forEach(function(el){ el.classList.add('reveal'); });
   var io=new IntersectionObserver(function(entries){
     entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); } });
   },{threshold:.12});
   document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+
+  // ---- Carousel ----
+  var reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function initCarousel(root){
+    var track=root.querySelector('.car-track');
+    var slides=root.querySelectorAll('.car-slide');
+    var dotsWrap=root.querySelector('.car-dots');
+    var n=slides.length, i=0, timer=null;
+    var delay=parseInt(root.getAttribute('data-autoplay')||'0',10);
+    function update(){ if(dotsWrap){ var ds=dotsWrap.children; for(var x=0;x<ds.length;x++){ ds[x].classList.toggle('active',x===i); } } }
+    function go(k){ i=(k+n)%n; track.style.transform='translateX('+(-i*100)+'%)'; update(); }
+    if(dotsWrap){ for(var x=0;x<n;x++){ (function(x){ var b=document.createElement('button'); b.setAttribute('aria-label','Go to slide '+(x+1)); b.addEventListener('click',function(){ go(x); restart(); }); dotsWrap.appendChild(b); })(x); } }
+    var prev=root.querySelector('.car-arrow.prev'), next=root.querySelector('.car-arrow.next');
+    if(prev) prev.addEventListener('click',function(){ go(i-1); restart(); });
+    if(next) next.addEventListener('click',function(){ go(i+1); restart(); });
+    function start(){ if(delay>0 && !reduced && n>1){ timer=setInterval(function(){ go(i+1); },delay); } }
+    function stop(){ if(timer){ clearInterval(timer); timer=null; } }
+    function restart(){ stop(); start(); }
+    root.addEventListener('mouseenter',stop); root.addEventListener('mouseleave',start);
+    go(0); start();
+  }
+  document.querySelectorAll('[data-carousel]').forEach(initCarousel);
 })();
 </script>
 </body>
