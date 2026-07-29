@@ -217,10 +217,8 @@ footer p{color:#6b625a}
 .life-head{max-width:1050px;margin:0 auto 46px;text-align:center}
 .life-head .eyebrow{color:var(--muted)}
 .life-head h2{font-family:"Italiana",Georgia,serif;font-weight:400;font-size:clamp(40px,5vw,72px);line-height:1.02;margin:.25em 0 0}
-.life-grid{display:grid;grid-template-columns:1.08fr .82fr 1.08fr;grid-template-areas:"portrait tray lash" "portrait vanity flat" "suit one two" "eight ten .";gap:clamp(16px,2.2vw,28px);max-width:1320px;margin:0 auto;padding:10px 0 30px;align-items:start}
-.life-item{position:relative;display:block;min-width:0;margin:0;background:#efe7db;border-radius:4px;overflow:visible;transform:rotate(var(--tilt,0deg));transition:opacity .8s ease,transform .8s cubic-bezier(.22,.61,.36,1),box-shadow .35s ease}
-.life-item:nth-child(3n){--tilt:-1.2deg}
-.life-item:nth-child(3n+1){--tilt:.8deg}
+.life-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-areas:"portrait tray lash" "portrait vanity flat" "suit one two" "eight ten .";gap:clamp(20px,2.4vw,32px);max-width:1320px;margin:0 auto;padding:10px 0 30px;align-items:start}
+.life-item{position:relative;display:block;min-width:0;margin:0;background:#efe7db;border-radius:4px;overflow:hidden;transition:opacity .8s ease,transform .8s cubic-bezier(.22,.61,.36,1),box-shadow .35s ease}
 .li-portrait{grid-area:portrait}
 .li-tray{grid-area:tray}
 .li-lash{grid-area:lash}
@@ -231,12 +229,11 @@ footer p{color:#6b625a}
 .life-item:nth-child(8){grid-area:two}
 .life-item:nth-child(9){grid-area:eight}
 .life-item:nth-child(10){grid-area:ten}
-.life-item:nth-child(6n){--tilt:1.8deg}
-.life-item img{display:block;width:auto;height:auto !important;max-width:100%;max-height:none;object-fit:contain;border-radius:4px;transition:none}
-.life-item:hover{z-index:4;box-shadow:0 18px 38px rgba(62,45,31,.16);transform:translateY(-8px) rotate(0deg)}
+.life-item img{display:block;width:100%;height:auto;max-height:520px;object-fit:contain;border-radius:4px;transition:none;background:#efe7db}
+.life-item:hover{z-index:4;box-shadow:0 18px 38px rgba(62,45,31,.16);transform:translateY(-6px)}
 .life-item:hover img{transform:none}
-.life-item.reveal{opacity:0;transform:translateY(34px) rotate(var(--tilt,0deg))}
-.life-item.reveal.visible{opacity:1;transform:translateY(0) rotate(var(--tilt,0deg))}
+.life-item.reveal{opacity:0;transform:translateY(34px)}
+.life-item.reveal.visible{opacity:1;transform:translateY(0)}
 .life-item:nth-child(2){transition-delay:.08s}.life-item:nth-child(3){transition-delay:.16s}.life-item:nth-child(4){transition-delay:.24s}
 .life-item:nth-child(5){transition-delay:.32s}.life-item:nth-child(6){transition-delay:.4s}.life-item:nth-child(7){transition-delay:.48s}
 .life-item:nth-child(8){transition-delay:.56s}.life-item:nth-child(9){transition-delay:.64s}.life-item:nth-child(10){transition-delay:.72s}
@@ -281,6 +278,16 @@ footer p{color:#6b625a}
 .results-carousel .rc figcaption strong{font-size:22px}
 .results-carousel .car-arrow{top:42%}
 @media(max-width:560px){.results-carousel{padding:0}.results-carousel .car-slide{padding:0 34px}.results-carousel .rc img{max-width:78vw;max-height:52vh}.results-carousel .car-viewport{padding-bottom:20px}}
+
+/* ===== Type-banner marquee (right-to-left) ===== */
+.type-banner{background:#f7f2ec;border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;padding:0;margin-top:96px;margin-bottom:0}
+.marquee{position:relative;width:100%;overflow:hidden;display:flex;align-items:center;min-height:46px;mask-image:linear-gradient(90deg,transparent 0,#000 8%,#000 92%,transparent 100%);-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 8%,#000 92%,transparent 100%)}
+.marquee-track{display:inline-flex;align-items:center;gap:32px;white-space:nowrap;animation:marquee-rtl 32s linear infinite;will-change:transform}
+.marquee-item{font-family:"Italiana",Georgia,serif;font-weight:400;font-size:clamp(15px,1.6vw,20px);line-height:1;letter-spacing:.08em;color:#3e2d1f}
+.marquee-dot{font-family:"Italiana",Georgia,serif;font-size:clamp(15px,1.6vw,20px);line-height:1;color:#b9ad9f}
+@keyframes marquee-rtl{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.type-banner:hover .marquee-track{animation-play-state:paused}
+@media (prefers-reduced-motion: reduce){.marquee-track{animation:none;transform:translateX(0)}}
 </style>
 </head>
 <body class="loading">
@@ -318,8 +325,31 @@ footer p{color:#6b625a}
 </section>
 
 
-<section class="type-banner">
-  <div class="type-cta"><a class="btn" href="#shop">Shop the serum</a><a class="btn ghost" href="#story">Discover more</a></div>
+<section class="type-banner" aria-hidden="true">
+  <div class="marquee">
+    <div class="marquee-track">
+      <span class="marquee-item">Lash Serum</span>
+      <span class="marquee-dot">·</span>
+      <span class="marquee-item">Longer Lashes</span>
+      <span class="marquee-dot">·</span>
+      <span class="marquee-item">Eye-Loving</span>
+      <span class="marquee-dot">·</span>
+      <span class="marquee-item">Clean Beauty</span>
+      <span class="marquee-dot">·</span>
+      <span class="marquee-item">Daily Ritual</span>
+      <span class="marquee-dot">·</span>
+      <span class="marquee-item">Lash Serum</span>
+      <span class="marquee-dot">·</span>
+      <span class="marquee-item">Longer Lashes</span>
+      <span class="marquee-dot">·</span>
+      <span class="marquee-item">Eye-Loving</span>
+      <span class="marquee-dot">·</span>
+      <span class="marquee-item">Clean Beauty</span>
+      <span class="marquee-dot">·</span>
+      <span class="marquee-item">Daily Ritual</span>
+      <span class="marquee-dot">·</span>
+    </div>
+  </div>
 </section>
 
 <section class="results-section" id="results">
