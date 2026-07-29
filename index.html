@@ -95,7 +95,7 @@ footer p{color:#aaa39b;max-width:480px;line-height:1.6}
   footer{grid-template-columns:1fr}
 }
 
-.results-section{padding:110px 5vw;background:#f7f2ec}
+.results-section{padding:clamp(72px,9vw,126px) 5vw;background:#f7f2ec}
 .results-head{display:grid;grid-template-columns:.8fr 1.2fr;gap:6vw;align-items:end;margin-bottom:46px}
 .results-head h2,.cycle-copy h2,.ingredient-copy h2{font-size:clamp(42px,5vw,78px);line-height:1}
 .results-head p,.cycle-copy p,.ingredient-copy p{font-size:17px;line-height:1.75;color:#564e47}
@@ -106,9 +106,9 @@ footer p{color:#aaa39b;max-width:480px;line-height:1.6}
 .result-meta small{display:block;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);margin-bottom:6px}
 .result-meta strong{font-family:"Italiana",Georgia,serif;font-weight:400;font-size:24px}
 .disclaimer{margin-top:22px;font-size:12px;line-height:1.6;color:#7c746d}
-.cycle-section{display:grid;grid-template-columns:1.1fr .9fr;min-height:760px;background:#fff}
-.cycle-visual{background:#f2e9df;padding:32px;display:flex;align-items:center;justify-content:center}
-.cycle-visual img{height:auto;max-height:100%;object-fit:contain}
+.cycle-section{display:grid;grid-template-columns:1.1fr .9fr;min-height:760px;background:#fff;align-items:stretch}
+.cycle-visual{background:#f2e9df;padding:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.cycle-visual img{width:100%;height:100%;object-fit:contain;object-position:center}
 .cycle-copy{padding:8vw 6vw;display:flex;flex-direction:column;justify-content:center}
 .cycle-points{margin-top:30px}
 .cycle-point{display:grid;grid-template-columns:54px 1fr;gap:16px;padding:18px 0;border-top:1px solid var(--line)}
@@ -126,7 +126,7 @@ footer p{color:#aaa39b;max-width:480px;line-height:1.6}
 @media(max-width:900px){
   .results-head,.cycle-section,.ingredient-feature{grid-template-columns:1fr}
   .result-grid{grid-template-columns:1fr}
-  .cycle-visual,.ingredient-image{min-height:auto;padding:18px}
+  .cycle-visual,.ingredient-image{min-height:auto;padding:18px}.cycle-visual{overflow:visible}.cycle-visual img{height:auto;object-fit:contain}
   .ingredient-list{grid-template-columns:1fr}
 }
 
@@ -212,39 +212,42 @@ footer p{color:#6b625a}
 .confidence-copy h2{font-family:"Italiana",Georgia,serif;font-weight:400;font-size:clamp(38px,4.6vw,70px);line-height:1.04;margin:14px 0 0}
 .confidence-copy p{font-size:16px;line-height:1.8;color:#564e47;max-width:500px;margin-top:22px}
 
-/* Lifestyle gallery */
+/* Lifestyle gallery — irregular collage with no fixed image heights */
 .life{padding:110px 5vw;background:#faf6f0}
 .life-head{max-width:1050px;margin:0 auto 46px;text-align:center}
 .life-head .eyebrow{color:var(--muted)}
 .life-head h2{font-family:"Italiana",Georgia,serif;font-weight:400;font-size:clamp(40px,5vw,72px);line-height:1.02;margin:.25em 0 0}
-.life-grid{
-  display:grid;
-  grid-template-columns:2fr 1fr 1fr;
-  grid-template-rows:repeat(3,260px);
-  grid-template-areas:
-    "portrait tray   lash"
-    "portrait tray   lash"
-    "vanity  flat suit";
-  gap:14px;
-  max-width:1180px;margin:0 auto;
-}
-.life-item{position:relative;overflow:hidden;background:#efe7db;border-radius:6px}
-.life-item img{width:100%;height:100%;object-fit:cover;transition:transform .6s ease}
-.life-item:hover img{transform:scale(1.05)}
+.life-grid{display:grid;grid-template-columns:1.08fr .82fr 1.08fr;grid-template-areas:"portrait tray lash" "portrait vanity flat" "suit one two" "eight ten .";gap:clamp(16px,2.2vw,28px);max-width:1320px;margin:0 auto;padding:10px 0 30px;align-items:start}
+.life-item{position:relative;display:block;min-width:0;margin:0;background:#efe7db;border-radius:4px;overflow:visible;transform:rotate(var(--tilt,0deg));transition:opacity .8s ease,transform .8s cubic-bezier(.22,.61,.36,1),box-shadow .35s ease}
+.life-item:nth-child(3n){--tilt:-1.2deg}
+.life-item:nth-child(3n+1){--tilt:.8deg}
 .li-portrait{grid-area:portrait}
 .li-tray{grid-area:tray}
 .li-lash{grid-area:lash}
 .li-vanity{grid-area:vanity}
 .li-flat{grid-area:flat}
 .li-suit{grid-area:suit}
-.life-cap{position:absolute;left:16px;right:16px;bottom:14px;color:#fff;font-family:"Italiana",Georgia,serif;font-size:19px;text-shadow:0 1px 14px rgba(0,0,0,.4)}
+.life-item:nth-child(7){grid-area:one}
+.life-item:nth-child(8){grid-area:two}
+.life-item:nth-child(9){grid-area:eight}
+.life-item:nth-child(10){grid-area:ten}
+.life-item:nth-child(6n){--tilt:1.8deg}
+.life-item img{display:block;width:auto;height:auto !important;max-width:100%;max-height:none;object-fit:contain;border-radius:4px;transition:none}
+.life-item:hover{z-index:4;box-shadow:0 18px 38px rgba(62,45,31,.16);transform:translateY(-8px) rotate(0deg)}
+.life-item:hover img{transform:none}
+.life-item.reveal{opacity:0;transform:translateY(34px) rotate(var(--tilt,0deg))}
+.life-item.reveal.visible{opacity:1;transform:translateY(0) rotate(var(--tilt,0deg))}
+.life-item:nth-child(2){transition-delay:.08s}.life-item:nth-child(3){transition-delay:.16s}.life-item:nth-child(4){transition-delay:.24s}
+.life-item:nth-child(5){transition-delay:.32s}.life-item:nth-child(6){transition-delay:.4s}.life-item:nth-child(7){transition-delay:.48s}
+.life-item:nth-child(8){transition-delay:.56s}.life-item:nth-child(9){transition-delay:.64s}.life-item:nth-child(10){transition-delay:.72s}
+.life-cap{position:absolute;left:12px;right:12px;bottom:12px;color:#fff;font-family:"Italiana",Georgia,serif;font-size:18px;text-shadow:0 1px 14px rgba(0,0,0,.5)}
 .life-cap small{display:block;font-family:"DM Sans",sans-serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;opacity:.92;margin-bottom:3px}
 @media(max-width:900px){
   .confidence{grid-template-columns:1fr}.confidence-media{min-height:420px}
-  .life-grid{grid-template-columns:1fr 1fr;grid-template-rows:repeat(4,220px);grid-template-areas:"portrait portrait" "tray lash" "vanity flat" "suit suit"}
+  .life-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"portrait portrait" "tray lash" "vanity flat" "suit one" "two eight" "ten .";gap:16px}.life-item{margin-top:0!important}
 }
 @media(max-width:560px){
-  .life-grid{grid-template-columns:1fr;grid-template-rows:repeat(6,240px);grid-template-areas:"portrait" "tray" "lash" "vanity" "flat" "suit"}
+  .life-grid{grid-template-columns:1fr;grid-template-areas:"portrait" "tray" "lash" "vanity" "flat" "suit" "one" "two" "eight" "ten";gap:14px}.life-item{margin-top:0!important}.life-cap{font-size:15px;left:8px;right:8px;bottom:8px}
 }
 
 /* ===== Carousel (before/after + lifestyle) ===== */
@@ -267,13 +270,24 @@ footer p{color:#6b625a}
 .results-section .disclaimer{text-align:center;margin-top:30px}
 @media(max-width:560px){.car-arrow{width:40px;height:40px;font-size:18px}}
 @media (prefers-reduced-motion: reduce){.car-track{transition:none}}
+
+/* Before / after carousel uses the supplied image proportions without cropping. */
+.results-carousel{max-width:900px;margin:clamp(28px,4vw,52px) auto 0;padding:0 18px}
+.results-carousel .car-viewport{background:#fff;border:1px solid var(--line);padding:clamp(18px,3vw,34px) 0 26px}
+.results-carousel .car-slide{padding:0 70px}
+.results-carousel .rc{width:100%;margin:0;text-align:center}
+.results-carousel .rc img{max-width:min(72vw,560px);max-height:58vh;width:auto;height:auto;object-fit:contain;background:#fff;margin:0 auto;box-shadow:0 14px 34px rgba(65,47,32,.1)}
+.results-carousel .rc figcaption{margin-top:18px}
+.results-carousel .rc figcaption strong{font-size:22px}
+.results-carousel .car-arrow{top:42%}
+@media(max-width:560px){.results-carousel{padding:0}.results-carousel .car-slide{padding:0 34px}.results-carousel .rc img{max-width:78vw;max-height:52vh}.results-carousel .car-viewport{padding-bottom:20px}}
 </style>
 </head>
 <body class="loading">
 <div class="loader"><div class="loader-inner"><div class="loader-logo">LA SHAUNNIE</div><div class="loader-line"></div><div class="loader-copy">Eyelash Growth Serum</div></div></div>
 <header>
   <div class="logo">LA SHAUNNIE</div>
-  <nav><a href="#story">Story</a><a href="#results">Results</a><a href="#cycle">Growth cycle</a><a href="#ingredients">Ingredients</a><a href="#routine">How to use</a><a href="#shop">Shop</a></nav>
+  <nav><a href="#story">Story</a><a href="#cycle">Growth cycle</a><a href="#ingredients">Ingredients</a><a href="#routine">How to use</a><a href="#shop">Shop</a></nav>
   <div class="actions">Cart · 0</div>
 </header>
 
@@ -305,9 +319,6 @@ footer p{color:#6b625a}
 
 
 <section class="type-banner">
-  <div class="eyebrow">The ritual of natural beauty</div>
-  <h2 class="type-hero">Longer.<br>Fuller.<br><em>Unforced.</em></h2>
-  <p>A refined daily serum created to support stronger, healthier-looking lashes through one simple evening ritual.</p>
   <div class="type-cta"><a class="btn" href="#shop">Shop the serum</a><a class="btn ghost" href="#story">Discover more</a></div>
 </section>
 
@@ -316,25 +327,19 @@ footer p{color:#6b625a}
     <div><div class="eyebrow">Client transformation</div><h2>Real lashes.<br>Real progress.</h2></div>
     <p>See visible changes in lash length, density, and overall appearance with consistent use. Individual results may vary depending on your natural lash cycle and condition.</p>
   </div>
-  <div class="result-grid">
-    <figure class="rc"><img src="img/user-1.jpg" alt="Client transformation, fuller longer lashes"><figcaption><small>Real client · 8 weeks</small><strong>Fuller, longer lashes</strong></figcaption></figure>
-    <figure class="rc"><img src="img/user-2.jpg" alt="Client transformation, visible density"><figcaption><small>Real client · 6 weeks</small><strong>Visible density</strong></figcaption></figure>
-    <figure class="rc"><img src="img/user-3.jpg" alt="Client transformation, stronger lash line"><figcaption><small>Real client · 8 weeks</small><strong>Stronger lash line</strong></figcaption></figure>
-  </div>
-  <p class="disclaimer">Individual results may vary. For best results, use consistently morning and evening.</p>
-</section>
-
-<section class="testimonials" aria-label="Customer reviews">
-  <div class="carousel tm-carousel" data-carousel data-autoplay="6000">
+  <div class="carousel results-carousel" data-carousel data-autoplay="5200" aria-label="Before and after results">
     <div class="car-viewport"><div class="car-track">
-      <div class="car-slide"><div class="tm-slide"><div class="tm-media"><img src="img/user-1.jpg" alt="Client before and after"></div><blockquote class="tm-quote"><p>&ldquo;My lashes look softer, fuller and more defined &mdash; even without mascara.&rdquo;</p><footer><span>Amelia &middot; Verified customer</span><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span></footer></blockquote></div></div>
-      <div class="car-slide"><div class="tm-slide"><div class="tm-media"><img src="img/user-2.jpg" alt="Client before and after"></div><blockquote class="tm-quote"><p>&ldquo;Eight weeks in and honestly it&rsquo;s the first thing people notice about me now.&rdquo;</p><footer><span>Sofia &middot; Verified customer</span><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span></footer></blockquote></div></div>
-      <div class="car-slide"><div class="tm-slide"><div class="tm-media"><img src="img/user-3.jpg" alt="Client before and after"></div><blockquote class="tm-quote"><p>&ldquo;Gentle enough for every single day, and my lash line finally looks healthy.&rdquo;</p><footer><span>Hannah &middot; Verified customer</span><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span></footer></blockquote></div></div>
+      <div class="car-slide"><figure class="rc"><img src="img/before%20after/user-1.jpg" alt="Client before and after, fuller longer lashes"><figcaption><small>Real client · 8 weeks</small><strong>Fuller, longer lashes</strong></figcaption></figure></div>
+      <div class="car-slide"><figure class="rc"><img src="img/before%20after/user-2%202.jpg" alt="Client before and after, visible density"><figcaption><small>Real client · 6 weeks</small><strong>Visible density</strong></figcaption></figure></div>
+      <div class="car-slide"><figure class="rc"><img src="img/before%20after/user-3%202.jpg" alt="Client before and after, stronger lash line"><figcaption><small>Real client · 8 weeks</small><strong>Stronger lash line</strong></figcaption></figure></div>
+      <div class="car-slide"><figure class="rc"><img src="img/before%20after/USER914.png" alt="Client before and after, naturally defined lashes"><figcaption><small>Real client · 10 weeks</small><strong>Naturally defined</strong></figcaption></figure></div>
+      <div class="car-slide"><figure class="rc"><img src="img/before%20after/USER9.jpeg" alt="Client before and after, healthier-looking lash line"><figcaption><small>Real client · 8 weeks</small><strong>Healthier-looking lashes</strong></figcaption></figure></div>
     </div></div>
-    <button class="car-arrow prev" aria-label="Previous">&#8592;</button>
-    <button class="car-arrow next" aria-label="Next">&#8594;</button>
+    <button class="car-arrow prev" aria-label="Previous result">&#8592;</button>
+    <button class="car-arrow next" aria-label="Next result">&#8594;</button>
     <div class="car-dots"></div>
   </div>
+  <p class="disclaimer">Individual results may vary. For best results, use consistently morning and evening.</p>
 </section>
 
 <section class="cycle-section" id="cycle">
@@ -416,6 +421,10 @@ footer p{color:#6b625a}
     <div class="life-item li-vanity"><img src="img/life-vanity.jpg" alt="A quiet moment"><div class="life-cap"><small>A quiet moment</small>Just for you.</div></div>
     <div class="life-item li-flat"><img src="img/life-flatlay.jpg" alt="Product flatlay"><div class="life-cap"><small>Everyday care</small>Simple by design.</div></div>
     <div class="life-item li-suit"><img src="img/life-suit.jpg" alt="Effortless natural style"></div>
+    <div class="life-item"><img src="img/life%201.png" alt="Everyday beauty detail"></div>
+    <div class="life-item"><img src="img/life%202.png" alt="Quiet beauty ritual"></div>
+    <div class="life-item"><img src="img/life%208.png" alt="Beauty product detail"></div>
+    <div class="life-item"><img src="img/life%2010.png" alt="Soft morning light"></div>
   </div>
 </section>
 
@@ -427,7 +436,7 @@ footer p{color:#6b625a}
     <div class="price">USD $40</div>
     <a href="#" class="btn">Add to cart</a>
   </div>
-  <div><img src="img/product.jpg" alt="LA SHAUNNIE serum packaging"></div>
+  <div><img src="img/product%20.png" alt="LA SHAUNNIE eyelash growth serum"></div>
 </section>
 
 <section class="faq">
@@ -445,13 +454,16 @@ footer p{color:#6b625a}
 </footer>
 <script>
 (function(){
+  // Replace only the blurred left editorial image; keep the original 1-left / 2-right mood layout.
+  var editorialImage=document.querySelector('.editorial-main img');
+  if(editorialImage){ editorialImage.src='img/mood%2033.png'; editorialImage.alt='Sunlit editorial beauty portrait'; }
   var loader=document.querySelector('.loader');
   window.addEventListener('load',function(){
     setTimeout(function(){ if(loader) loader.classList.add('hidden'); document.body.classList.remove('loading'); },2000);
   });
   var header=document.querySelector('header');
   window.addEventListener('scroll',function(){ header.classList.toggle('scrolled',window.scrollY>60); },{passive:true});
-  var sel='.intro > *, .editorial, .results-head, .carousel, .cycle-copy > *, .ingredient-copy > *, .split-copy > *, .science-head > *, .ingredient, .confidence-copy > *, .life-head > *, .product-copy > *, .faq > *, footer > *';
+  var sel='.intro > *, .editorial, .results-head, .carousel, .cycle-copy > *, .ingredient-copy > *, .split-copy > *, .science-head > *, .ingredient, .confidence-copy > *, .life-head > *, .life-item, .product-copy > *, .faq > *, footer > *';
   document.querySelectorAll(sel).forEach(function(el){ el.classList.add('reveal'); });
   var io=new IntersectionObserver(function(entries){
     entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); } });
