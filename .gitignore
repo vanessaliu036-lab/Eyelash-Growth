@@ -10,3 +10,4 @@
 /crop_*.png
 /_*.png
 .DS_Store
+.vercel
