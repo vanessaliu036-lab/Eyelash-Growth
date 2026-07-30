@@ -89,8 +89,20 @@ class handler(BaseHTTPRequestHandler):
                             ext = "jpg"
                         filename = f"payment_{tg_user_id or 'anon'}_{int(time.time())}.{ext}"
 
-                        # Find this user's most recent order
+                        # Find this user's most recent UNPAID order
+                        # (only attach photo as payment proof if they still owe us)
                         latest = find_latest_order_by_tg_user(tg_user_id) if tg_user_id else None
+                        if latest:
+                            # Reject if order is older than 24h (stale)
+                            from datetime import datetime, timezone, timedelta
+                            order_ts = latest.get("fields", {}).get("下單日期", "")
+                            try:
+                                ot = datetime.fromisoformat(order_ts.replace("Z", "+00:00"))
+                                age = datetime.now(timezone.utc) - ot
+                                if age > timedelta(hours=24):
+                                    latest = None
+                            except Exception:
+                                pass
                         order_id_text = ""
                         if latest:
                             rec_id = latest["id"]

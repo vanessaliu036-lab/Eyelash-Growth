@@ -121,11 +121,12 @@ def tg_get_file_url(file_id: str) -> str:
     return f"https://api.telegram.org/file/bot{env('TELEGRAM_BOT_TOKEN')}/{path}"
 
 
-def find_latest_order_by_tg_user(tg_user_id: int) -> Optional[dict]:
-    """Most recent order for this TG user, or None."""
+def find_latest_order_by_tg_user(tg_user_id: int, payment_status: str = "未付款") -> Optional[dict]:
+    """Most recent order for this TG user filtered by payment status.
+    Default: '未付款' — i.e. orders still waiting for a payment screenshot."""
     rows = airtable_list(
         ORDERS_TABLE,
-        formula=f"{{TG 用戶 ID}}={int(tg_user_id)}",
+        formula=f"AND({{TG 用戶 ID}}={int(tg_user_id)},{{付款狀態}}=\"{payment_status}\")",
         max_records=5,
     )
     if not rows:

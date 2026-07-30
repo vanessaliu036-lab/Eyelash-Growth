@@ -12,8 +12,8 @@ import json
 import os
 import sys
 
-# Make _lib importable
-sys.path.insert(0, os.path.dirname(__file__))
+# Make _lib importable (need to walk up to api/ root)
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from _lib import (
     env, airtable_headers, airtable_list, airtable_update,
     http_json, AIRTABLE_API, ORDERS_TABLE, CUSTOMERS_TABLE,
