@@ -216,7 +216,7 @@ async function patchOrder(recId, body) {
   try {
     const res = await fetch(`/api/admin/orders?id=${encodeURIComponent(recId)}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "X-Telegram-User-Id": String(ADMIN_TG_ID) },
       body: JSON.stringify(body),
     });
     if (!res.ok) {
@@ -274,7 +274,9 @@ function exportOrders() {
 async function loadOrders() {
   showBanner("Loading orders from Airtable…");
   try {
-    const res = await fetch("/api/admin/orders?stats=1");
+    const res = await fetch("/api/admin/orders?stats=1", {
+      headers: { "X-Telegram-User-Id": String(ADMIN_TG_ID) },
+    });
     if (!res.ok) {
       showBanner("API error: HTTP " + res.status, "error");
       return;

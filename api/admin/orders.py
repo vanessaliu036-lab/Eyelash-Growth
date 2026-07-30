@@ -83,10 +83,36 @@ class handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    def _check_auth(self) -> bool:
+        """Return True if requester is in ADMIN_TG_IDS (comma-separated env).
+
+        Compares X-Telegram-User-Id header against the allowlist. If
+        ADMIN_TG_IDS is unset or empty, every request is rejected — fail
+        closed.
+        """
+        allowed_raw = os.environ.get("ADMIN_TG_IDS", "").strip()
+        if not allowed_raw:
+            print("[admin/orders] ADMIN_TG_IDS env not set — rejecting",
+                  file=sys.stderr)
+            return False
+        try:
+            allowed = {int(x.strip()) for x in allowed_raw.split(",") if x.strip()}
+        except ValueError:
+            print(f"[admin/orders] bad ADMIN_TG_IDS value: {allowed_raw!r}",
+                  file=sys.stderr)
+            return False
+        header = self.headers.get("X-Telegram-User-Id", "").strip()
+        try:
+            return int(header) in allowed
+        except ValueError:
+            return False
+
     def do_OPTIONS(self):
         self._send_json(204, {})
 
     def do_GET(self):
+        if not self._check_auth():
+            return self._send_json(401, {"error": "unauthorized"})
         try:
             url = urlparse(self.path)
             q = parse_qs(url.query)
@@ -119,6 +145,8 @@ class handler(BaseHTTPRequestHandler):
             return self._send_json(500, {"error": str(e)})
 
     def do_PATCH(self):
+        if not self._check_auth():
+            return self._send_json(401, {"error": "unauthorized"})
         try:
             url = urlparse(self.path)
             q = parse_qs(url.query)
