@@ -18,7 +18,6 @@ import time
 sys.path.insert(0, os.path.dirname(__file__))
 from _lib import (
     parse_order_message, find_or_create_customer, create_order_record,
-    find_latest_order_by_tg_user, tg_get_file_url, airtable_attach_via_patch,
     ORDERS_TABLE,
     tg_send, tg_call,
 )
@@ -75,67 +74,14 @@ class handler(BaseHTTPRequestHandler):
             # 2. Look for the order.html payload
             order = parse_order_message(text)
             if not order or not chat_id or not tg_user_id:
-                # Not a parseable order — try to be helpful based on what we got
+                # Not a parseable order — try to be helpful
                 photos = message.get("photo") or []
                 caption = (message.get("caption") or "").strip()
                 if photos:
-                    try:
-                        # Pick the largest photo (last in the array)
-                        largest = photos[-1]
-                        file_id = largest.get("file_id")
-                        file_url = tg_get_file_url(file_id)
-                        ext = file_url.rsplit(".", 1)[-1].lower()
-                        if ext not in ("jpg", "jpeg", "png", "webp"):
-                            ext = "jpg"
-                        filename = f"payment_{tg_user_id or 'anon'}_{int(time.time())}.{ext}"
-
-                        # Find this user's most recent UNPAID order
-                        # (only attach photo as payment proof if they still owe us)
-                        latest = find_latest_order_by_tg_user(tg_user_id) if tg_user_id else None
-                        if latest:
-                            # Reject if order is older than 24h (stale)
-                            from datetime import datetime, timezone, timedelta
-                            order_ts = latest.get("fields", {}).get("下單日期", "")
-                            try:
-                                ot = datetime.fromisoformat(order_ts.replace("Z", "+00:00"))
-                                age = datetime.now(timezone.utc) - ot
-                                if age > timedelta(hours=24):
-                                    latest = None
-                            except Exception:
-                                pass
-                        order_id_text = ""
-                        if latest:
-                            rec_id = latest["id"]
-                            fields = latest.get("fields", {})
-                            order_id = fields.get("訂單編號", "(no id)")
-                            order_id_text = f"\nOrder: <code>{order_id}</code>"
-                            try:
-                                airtable_attach_via_patch(
-                                    ORDERS_TABLE, rec_id, "付款截圖", file_url, filename
-                                )
-                            except Exception as up_err:
-                                # Attachment failed — still acknowledge the message
-                                print(f"[webhook_telegram] upload err: {up_err}", file=sys.stderr)
-                                tg_send(chat_id,
-                                        "🧾 Got the screenshot, but I couldn't attach it to "
-                                        "your order record. Our team will follow up manually 🙏")
-                                return self._ok()
-                        else:
-                            # No prior order from this TG user — store on its own
-                            tg_send(chat_id,
-                                    "🧾 Got your screenshot. We don't see a recent order from "
-                                    "this account — our team will follow up to link it 🙏")
-                            return self._ok()
-
-                        tg_send(chat_id,
-                                f"✅ <b>Payment screenshot received</b>{order_id_text}\n\n"
-                                f"Thanks — our team will verify it and confirm your order shortly. "
-                                f"Hang tight 🙏")
-                    except Exception as photo_err:
-                        print(f"[webhook_telegram] photo err: {photo_err}", file=sys.stderr)
-                        tg_send(chat_id,
-                                "🧾 Got your screenshot, but something went wrong saving it. "
-                                "Our team will follow up manually 🙏")
+                    tg_send(chat_id,
+                            "Thanks for the photo — but we don't need a payment screenshot. "
+                            "Just place your order on the website, the bank account last 4 "
+                            "digits you enter there is enough to verify 🙏")
                     return self._ok()
                 elif caption:
                     tg_send(chat_id,
@@ -161,9 +107,10 @@ class handler(BaseHTTPRequestHandler):
                     f"✅ <b>Order received</b>\n\n"
                     f"Order ID: <code>{order_id}</code>\n"
                     f"Quantity: {order['quantity']}\n"
-                    f"Total: ${order['total']:.2f}\n\n"
-                    f"After payment, send your payment screenshot here and I'll "
-                    f"attach it to your order. Our team will verify and confirm 🙏")
+                    f"Total: ${order['total']:.2f}\n"
+                    f"Bank last 4: <code>{order.get('account4','')}</code>\n\n"
+                    f"Our team will verify your payment and arrange shipping. "
+                    f"You'll get a Telegram message here when your order ships 🙏")
 
             return self._ok()
 

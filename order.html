@@ -559,6 +559,12 @@
                 <textarea id="address" placeholder="Enter your address in Phnom Penh" required></textarea>
                 <p class="field-note">Delivery is available within Phnom Penh only.</p>
               </div>
+
+              <div>
+                <label for="account4">Bank Account — Last 4 Digits</label>
+                <input id="account4" type="text" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="e.g. 1234" required>
+                <p class="field-note">Used to verify your transfer. Please enter the last 4 digits of the bank account you paid from.</p>
+              </div>
             </div>
 
             <div class="product-row">
@@ -643,7 +649,7 @@
 
           <div class="warning">
             <strong>⚠️ IMPORTANT</strong>
-            After payment, please send your payment screenshot to our Telegram for verification.<br>
+            Please enter the <b>last 4 digits of the bank account</b> you paid from below — we'll use it to verify your transfer.<br>
             Orders will NOT be processed or shipped until payment has been verified.
           </div>
 
@@ -703,9 +709,14 @@
       const name = document.getElementById("name").value.trim();
       const phone = document.getElementById("phone").value.trim();
       const address = document.getElementById("address").value.trim();
+      const account4 = document.getElementById("account4").value.trim();
 
-      if (!name || !phone || !address){
-        statusEl.textContent = "Please complete your name, phone number and delivery address.";
+      if (!name || !phone || !address || !/^\d{4}$/.test(account4)){
+        if (!/^\d{4}$/.test(account4)) {
+          statusEl.textContent = "Please enter the last 4 digits of your bank account (exactly 4 numbers).";
+        } else {
+          statusEl.textContent = "Please complete your name, phone number, delivery address and bank account last 4 digits.";
+        }
         return;
       }
 
@@ -713,6 +724,7 @@
         `Name: ${encodeURIComponent(name)}%0A` +
         `Phone: ${encodeURIComponent(phone)}%0A` +
         `Address: ${encodeURIComponent(address)}%0A` +
+        `Bank Last 4: ${encodeURIComponent(account4)}%0A` +
         `Quantity: ${quantity}%0A` +
         `Total: ${document.getElementById('total').textContent}`;
 

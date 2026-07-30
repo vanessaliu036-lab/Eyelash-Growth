@@ -157,6 +157,7 @@ ORDER_RE = re.compile(
     r"Name:\s*(?P<name>.+?)\s*\n"
     r"Phone:\s*(?P<phone>.+?)\s*\n"
     r"Address:\s*(?P<address>.+?)\s*\n"
+    r"Bank Last 4:\s*(?P<account4>\d{4})\s*\n"
     r"Quantity:\s*(?P<qty>\d+)\s*\n"
     r"Total:\s*\$?(?P<total>[\d.]+)",
     re.IGNORECASE,
@@ -171,6 +172,7 @@ def parse_order_message(text: str) -> Optional[dict]:
         "name": m.group("name").strip(),
         "phone": m.group("phone").strip(),
         "address": m.group("address").strip(),
+        "account4": m.group("account4").strip(),
         "quantity": int(m.group("qty")),
         "total": float(m.group("total")),
     }
@@ -213,8 +215,9 @@ def create_order_record(customer_id: str, order: dict, tg_user_id: int,
         "TG 用戶 ID": tg_user_id,
         "電話": order["phone"],
         "地址": order["address"],
+        "帳號後四碼": order.get("account4", ""),
         "訂購數量": order["quantity"],
         "金額": order["total"],
-        "付款狀態": "未付款",
+        "付款狀態": "已付款",
         "出貨狀態": "待出貨",
     })
