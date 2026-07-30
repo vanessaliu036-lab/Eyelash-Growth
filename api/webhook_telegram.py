@@ -72,8 +72,20 @@ class handler(BaseHTTPRequestHandler):
             # 2. Look for the order.html payload
             order = parse_order_message(text)
             if not order or not chat_id or not tg_user_id:
-                # Not an order — fall through to a friendly nudge
-                if text and not text.startswith("/"):
+                # Not a parseable order — try to be helpful based on what we got
+                has_photo = bool(message.get("photo"))
+                caption = (message.get("caption") or "").strip()
+                if has_photo:
+                    tg_send(chat_id,
+                            "🧾 <b>Payment screenshot received</b>\n\n"
+                            "Thanks — our team will verify it and confirm your order shortly. "
+                            "Hang tight 🙏")
+                elif caption:
+                    tg_send(chat_id,
+                            "Got it ✉️ If you're placing an order, please use "
+                            "the website's “Contact Customer Service” button "
+                            "so I can capture your details automatically.")
+                elif text and not text.startswith("/"):
                     tg_send(chat_id,
                             "Got it ✉️ If you're placing an order, please use "
                             "the website's “Contact Customer Service” button "
