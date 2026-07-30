@@ -177,6 +177,17 @@
       color:var(--muted);
       font-size:12px;
     }
+    .required{color:var(--danger);font-weight:700;margin-left:2px}
+    .field-error{
+      margin:7px 2px 0;
+      color:var(--danger);
+      font-size:12px;
+      font-weight:600;
+    }
+    .field-invalid{
+      border-color:var(--danger) !important;
+      background:#fff7f7 !important;
+    }
 
     .product-row{
       display:grid;
@@ -448,7 +459,6 @@
 
     .tg-btn:hover{
       background:var(--accent-dark);
-      transform:translateY(-1px);
     }
 
     .status{
@@ -545,24 +555,28 @@
           <form id="orderForm" novalidate>
             <div class="field-grid">
               <div>
-                <label for="name">Full Name</label>
+                <label for="name">Full Name <span class="required">*</span></label>
                 <input id="name" type="text" placeholder="Enter your full name" autocomplete="name" required>
+                <p class="field-error" id="err-name" hidden></p>
               </div>
 
               <div>
-                <label for="phone">Phone Number</label>
+                <label for="phone">Phone Number <span class="required">*</span></label>
                 <input id="phone" type="tel" placeholder="Enter your phone number" autocomplete="tel" required>
+                <p class="field-error" id="err-phone" hidden></p>
               </div>
 
               <div>
-                <label for="address">Delivery Address</label>
+                <label for="address">Delivery Address <span class="required">*</span></label>
                 <textarea id="address" placeholder="Enter your address in Phnom Penh" required></textarea>
+                <p class="field-error" id="err-address" hidden></p>
                 <p class="field-note">Delivery is available within Phnom Penh only.</p>
               </div>
 
               <div>
-                <label for="account4">Bank Account — Last 4 Digits</label>
+                <label for="account4">Bank Account — Last 4 Digits <span class="required">*</span></label>
                 <input id="account4" type="text" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="e.g. 1234" required>
+                <p class="field-error" id="err-account4" hidden></p>
                 <p class="field-note">Used to verify your transfer. Please enter the last 4 digits of the bank account you paid from.</p>
               </div>
             </div>
@@ -706,19 +720,43 @@
     });
 
     document.getElementById("telegramButton").addEventListener("click", () => {
-      const name = document.getElementById("name").value.trim();
-      const phone = document.getElementById("phone").value.trim();
-      const address = document.getElementById("address").value.trim();
-      const account4 = document.getElementById("account4").value.trim();
-
-      if (!name || !phone || !address || !/^\d{4}$/.test(account4)){
-        if (!/^\d{4}$/.test(account4)) {
-          statusEl.textContent = "Please enter the last 4 digits of your bank account (exactly 4 numbers).";
+      const fields = [
+        { id: "name", errId: "err-name", label: "Full Name", test: (v) => v.length > 0, msg: "Please enter your full name." },
+        { id: "phone", errId: "err-phone", label: "Phone Number", test: (v) => v.length > 0, msg: "Please enter your phone number." },
+        { id: "address", errId: "err-address", label: "Delivery Address", test: (v) => v.length > 0, msg: "Please enter your delivery address." },
+        { id: "account4", errId: "err-account4", label: "Bank Last 4", test: (v) => /^\d{4}$/.test(v), msg: "Please enter the last 4 digits of your bank account (exactly 4 numbers)." },
+      ];
+      const values = {};
+      let firstInvalid = null;
+      let firstErrorMsg = "";
+      for (const f of fields) {
+        const el = document.getElementById(f.id);
+        const errEl = document.getElementById(f.errId);
+        const v = (el.value || "").trim();
+        values[f.id] = v;
+        const ok = f.test(v);
+        if (!ok) {
+          el.classList.add("field-invalid");
+          errEl.textContent = f.msg;
+          errEl.hidden = false;
+          if (!firstInvalid) { firstInvalid = el; firstErrorMsg = f.msg; }
         } else {
-          statusEl.textContent = "Please complete your name, phone number, delivery address and bank account last 4 digits.";
+          el.classList.remove("field-invalid");
+          errEl.textContent = "";
+          errEl.hidden = true;
         }
+      }
+      if (firstInvalid) {
+        statusEl.textContent = firstErrorMsg;
+        firstInvalid.focus();
+        firstInvalid.scrollIntoView({ behavior: "smooth", block: "center" });
         return;
       }
+
+      const name = values.name;
+      const phone = values.phone;
+      const address = values.address;
+      const account4 = values.account4;
 
       const orderInfo = `Hi, I just paid for my LA SHAUNNIE order.%0A%0A` +
         `Name: ${encodeURIComponent(name)}%0A` +
