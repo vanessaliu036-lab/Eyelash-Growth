@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LA SHAUNNIE — Order</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Italiana&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --paper:#f4ead9;
+      --card:#fffdfa;
+      --ink:#1b1714;
+      --muted:#7b746d;
+      --line:#dfd4c6;
+      --line-2:#eadfd4;
+      --accent:#8f745b;
+      --accent-dark:#765b44;
+      --danger:#d92d20;
+      --soft:#f2ebe4;
+      --soft-2:#fbf7f3;
+      --shadow:0 18px 55px rgba(60,42,26,.08);
+      --radius:22px;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      background:var(--paper);
+      color:var(--ink);
+      font-family:"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, Helvetica, sans-serif;
+      font-weight:400;
+      letter-spacing:.005em;
+    }
+
+    button,input,textarea{font:inherit}
+
+    h1,h2,h3,.brand,.loader-logo,.product-name{
+      font-family:"Italiana", Georgia, "Times New Roman", serif;
+      font-weight:400;
+    }
+
+    .page{
+      min-height:100vh;
+      padding:0 16px 48px;
+    }
+
+    .shell{
+      width:min(1060px,100%);
+      margin:0 auto;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:baseline;
+      justify-content:space-between;
+      margin:0 -16px 0;
+      padding:28px max(28px,calc((100vw - 1060px)/2 + 16px));
+      background:var(--card);
+      border-top:1px solid #dce2d6;
+      border-bottom:1px solid #d8d0c5;
+    }
+
+    .brand{
+      display:inline-flex;
+      align-items:baseline;
+      gap:8px;
+      letter-spacing:.15em;
+      font-size:22px;
+      line-height:1;
+      color:var(--ink);
+      text-decoration:none;
+    }
+
+    .brand:visited, .brand:hover, .brand:focus{
+      color:var(--ink);
+      text-decoration:none;
+    }
+
+    .brand small{
+      font-size:11px;
+      letter-spacing:.34em;
+      color:var(--muted);
+      font-family:"DM Sans", sans-serif;
+      font-weight:500;
+    }
+
+    .top-label{
+      color:var(--muted);
+      font-size:11px;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      font-weight:500;
+    }
+
+    .layout{
+      padding-top:34px;
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 390px;
+      gap:22px;
+      align-items:start;
+    }
+
+    .card{
+      background:rgba(255,253,250,.96);
+      border:1px solid rgba(231,223,214,.9);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+
+    .form-card{
+      padding:42px 34px 34px;
+      background:#efe3d1;
+    }
+
+    .eyebrow{
+      margin:0 0 22px;
+      color:#77706a;
+      font-size:12px;
+      font-weight:600;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+    }
+
+    h1{
+      margin:0;
+      max-width:690px;
+      font-size:clamp(46px,6vw,72px);
+      line-height:1.02;
+      letter-spacing:-.02em;
+    }
+
+    .intro{
+      margin:16px 0 30px;
+      max-width:590px;
+      color:var(--muted);
+      font-size:15px;
+      line-height:1.7;
+    }
+
+    .field-grid{display:grid;gap:14px}
+
+    label{
+      display:block;
+      margin:0 0 7px;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    input,textarea{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:13px;
+      background:#fff;
+      color:var(--ink);
+      outline:none;
+      padding:14px 15px;
+      transition:.18s ease;
+    }
+
+    input:focus,textarea:focus{
+      border-color:var(--accent);
+      box-shadow:0 0 0 4px rgba(155,123,94,.12);
+    }
+
+    textarea{
+      min-height:92px;
+      resize:vertical;
+    }
+
+    .field-note{
+      margin:7px 2px 0;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .product-row{
+      display:grid;
+      grid-template-columns:94px 1fr auto;
+      gap:16px;
+      align-items:center;
+      margin-top:22px;
+      padding:16px;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fcfaf8;
+    }
+
+    .product-image{
+      width:94px;
+      height:112px;
+      border-radius:14px;
+      overflow:hidden;
+      background:#f0e8df;
+      border:1px solid var(--line-2);
+      display:grid;
+      place-items:center;
+    }
+
+    .product-image img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      object-position:center;
+      display:block;
+    }
+
+    .product-image .fallback{
+      padding:10px;
+      color:var(--muted);
+      font-size:11px;
+      text-align:center;
+      line-height:1.35;
+    }
+
+    .product-name{
+      margin:0 0 5px;
+      font-size:20px;
+    }
+
+    .product-price{
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .qty{
+      display:flex;
+      align-items:center;
+      border:1px solid var(--line);
+      border-radius:12px;
+      overflow:hidden;
+      background:#fff;
+    }
+
+    .qty button{
+      width:44px;
+      height:44px;
+      border:0;
+      background:#fff;
+      cursor:pointer;
+      font-size:20px;
+      color:var(--accent-dark);
+      font-weight:700;
+    }
+
+    .qty button:hover{background:#f5f0ea}
+
+    .qty strong{
+      min-width:38px;
+      text-align:center;
+      font-size:15px;
+      font-weight:600;
+    }
+
+    .shipping-note{
+      margin-top:16px;
+      padding:14px 16px;
+      border:1px solid var(--line-2);
+      border-radius:16px;
+      background:linear-gradient(135deg,#f6eee7,#fbf8f4);
+    }
+
+    .shipping-title{
+      display:flex;
+      align-items:center;
+      gap:9px;
+      margin-bottom:7px;
+      font-size:14px;
+      font-weight:700;
+      color:#5b4b3f;
+    }
+
+    .shipping-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+    }
+
+    .shipping-item{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      min-height:46px;
+      padding:10px 12px;
+      border-radius:12px;
+      background:#fff;
+      border:1px solid #eee4da;
+      font-size:12px;
+      line-height:1.4;
+    }
+
+    .shipping-item strong{
+      display:block;
+      color:#3c3128;
+      font-size:13px;
+    }
+
+    .shipping-icon{
+      font-size:21px;
+      flex:0 0 auto;
+    }
+
+    .free{
+      background:#fffaf4;
+      border-color:#e8d6c5;
+    }
+
+    .free strong{
+      color:#8a5e38;
+      font-size:14px;
+    }
+
+    .payment-card{
+      position:sticky;
+      top:18px;
+      padding:24px;
+    }
+
+    .payment-card h2{
+      margin:0 0 18px;
+      font-size:24px;
+      letter-spacing:.02em;
+    }
+
+    .summary{
+      display:grid;
+      gap:11px;
+      padding-bottom:17px;
+      border-bottom:1px solid var(--line);
+    }
+
+    .summary-row{
+      display:flex;
+      justify-content:space-between;
+      gap:18px;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .summary-row strong{
+      color:var(--ink);
+      font-weight:700;
+    }
+
+    .total{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      padding:18px 0;
+    }
+
+    .total span{
+      font-size:14px;
+      font-weight:700;
+    }
+
+    .total strong{
+      font-family:"Italiana", Georgia, "Times New Roman", serif;
+      font-size:38px;
+      font-weight:400;
+      letter-spacing:.01em;
+    }
+
+    .qr-wrap{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:14px;
+      background:#fff;
+      text-align:center;
+    }
+
+    .qr{
+      aspect-ratio:1;
+      width:min(230px,100%);
+      margin:0 auto;
+      display:grid;
+      place-items:center;
+      border-radius:12px;
+      border:1px dashed #c9b8a8;
+      background:#faf7f3;
+      overflow:hidden;
+    }
+
+    .qr img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      background:#fff;
+    }
+
+    .qr-fallback{
+      padding:20px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.45;
+    }
+
+    .qr-title{
+      margin:12px 0 3px;
+      font-family:"Italiana", Georgia, serif;
+      font-size:16px;
+      font-weight:400;
+      letter-spacing:.04em;
+    }
+
+    .qr-sub{
+      margin:0;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .warning{
+      margin:16px 0;
+      padding:15px;
+      border-radius:14px;
+      background:#fff1f0;
+      border:1px solid #ffd3cf;
+      color:var(--danger);
+      font-size:13px;
+      font-weight:650;
+      line-height:1.6;
+    }
+
+    .warning strong{
+      display:block;
+      margin-bottom:3px;
+      font-size:14px;
+      letter-spacing:.03em;
+    }
+
+    .tg-btn{
+      width:100%;
+      border:0;
+      border-radius:14px;
+      padding:16px 18px;
+      background:var(--accent);
+      color:#fff;
+      font-size:15px;
+      font-weight:700;
+      cursor:pointer;
+      transition:.18s ease;
+      letter-spacing:.02em;
+    }
+
+    .tg-btn:hover{
+      background:var(--accent-dark);
+      transform:translateY(-1px);
+    }
+
+    .status{
+      min-height:20px;
+      margin:10px 0 0;
+      text-align:center;
+      color:var(--danger);
+      font-size:12px;
+      font-weight:650;
+    }
+
+    .fine-print{
+      margin:14px 0 0;
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.55;
+      text-align:center;
+      letter-spacing:.04em;
+    }
+
+    .back-link{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      margin-bottom:18px;
+      color:var(--muted);
+      font-size:11px;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      text-decoration:none;
+      font-weight:500;
+    }
+
+    .back-link:hover{color:var(--ink)}
+
+    @media(max-width:820px){
+      .layout{grid-template-columns:1fr}
+      .payment-card{position:static}
+      .form-card,.payment-card{padding:22px}
+      .topbar{padding-bottom:18px}
+    }
+
+    @media(max-width:560px){
+      .page{padding:0 12px 30px}
+      .topbar{
+        margin:0 -12px;
+        padding:24px 18px;
+      }
+      .brand{font-size:18px;letter-spacing:.12em}
+      .brand small{font-size:10px;letter-spacing:.28em}
+      .layout{padding-top:20px}
+      .form-card{padding:30px 22px 24px}
+      h1{font-size:46px;line-height:1.04}
+      .eyebrow{font-size:11px;letter-spacing:.18em;margin-bottom:20px}
+      .card{border-radius:18px}
+      .product-row{
+        grid-template-columns:78px 1fr;
+      }
+      .product-image{
+        width:78px;
+        height:96px;
+      }
+      .qty{
+        grid-column:1 / -1;
+        width:100%;
+        justify-content:space-between;
+      }
+      .qty button,.qty strong{flex:1}
+      .shipping-grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <div class="shell">
+      <header class="topbar">
+        <a href="index.html" class="brand" aria-label="LA SHAUNNIE home">
+          LA SHAUNNIE
+          <small>LASH</small>
+        </a>
+        <div class="top-label">Order Now</div>
+      </header>
+
+      <section class="layout">
+        <div class="card form-card">
+          <a href="index.html" class="back-link">← Back to story</a>
+          <p class="eyebrow">Simple Checkout</p>
+          <h1>Complete Your Order</h1>
+          <p class="intro">
+            Enter your delivery details, choose your quantity, then complete payment using the QR code.
+          </p>
+
+          <form id="orderForm" novalidate>
+            <div class="field-grid">
+              <div>
+                <label for="name">Full Name</label>
+                <input id="name" type="text" placeholder="Enter your full name" autocomplete="name" required>
+              </div>
+
+              <div>
+                <label for="phone">Phone Number</label>
+                <input id="phone" type="tel" placeholder="Enter your phone number" autocomplete="tel" required>
+              </div>
+
+              <div>
+                <label for="address">Delivery Address</label>
+                <textarea id="address" placeholder="Enter your address in Phnom Penh" required></textarea>
+                <p class="field-note">Delivery is available within Phnom Penh only.</p>
+              </div>
+            </div>
+
+            <div class="product-row">
+              <div class="product-image">
+                <img src="img/product/product.jpg" alt="LA SHAUNNIE Lash Serum"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+                <div class="fallback" style="display:none">
+                  Add product image<br><b>product.jpg</b>
+                </div>
+              </div>
+
+              <div>
+                <p class="product-name">LA SHAUNNIE Lash Serum</p>
+                <div class="product-price">$40.00 per bottle</div>
+              </div>
+
+              <div class="qty" aria-label="Quantity selector">
+                <button type="button" id="minus" aria-label="Decrease quantity">−</button>
+                <strong id="qty">1</strong>
+                <button type="button" id="plus" aria-label="Increase quantity">+</button>
+              </div>
+            </div>
+
+            <div class="shipping-note">
+              <div class="shipping-title">
+                <span>🚚</span>
+                <span>Phnom Penh Delivery</span>
+              </div>
+
+              <div class="shipping-grid">
+                <div class="shipping-item">
+                  <span class="shipping-icon">📦</span>
+                  <div>
+                    <strong>1 Bottle</strong>
+                    $3 delivery fee
+                  </div>
+                </div>
+
+                <div class="shipping-item free">
+                  <span class="shipping-icon">🎀</span>
+                  <div>
+                    <strong>2+ Bottles · FREE Shipping</strong>
+                    No delivery fee
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <aside class="card payment-card">
+          <h2>Payment</h2>
+
+          <div class="summary">
+            <div class="summary-row">
+              <span>Product subtotal</span>
+              <strong id="subtotal">$40.00</strong>
+            </div>
+            <div class="summary-row">
+              <span>Delivery fee</span>
+              <strong id="shipping">$3.00</strong>
+            </div>
+          </div>
+
+          <div class="total">
+            <span>Total</span>
+            <strong id="total">$43.00</strong>
+          </div>
+
+          <div class="qr-wrap">
+            <div class="qr">
+              <img src="img/qr-payment.png" alt="Payment QR Code"
+                   onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+              <div class="qr-fallback" style="display:none">
+                Add your payment QR code here.<br>
+                File name: <b>qr-payment.png</b>
+              </div>
+            </div>
+            <p class="qr-title">Scan to Pay</p>
+            <p class="qr-sub">Use your banking app to complete payment.</p>
+          </div>
+
+          <div class="warning">
+            <strong>⚠️ IMPORTANT</strong>
+            After payment, please send your payment screenshot to our Telegram for verification.<br>
+            Orders will NOT be processed or shipped until payment has been verified.
+          </div>
+
+          <button class="tg-btn" id="telegramButton" type="button">
+            I've Paid · Contact Customer Service
+          </button>
+
+          <p class="status" id="status"></p>
+
+          <p class="fine-print">
+            Telegram: @cambodia_eyelash_bot
+          </p>
+        </aside>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const UNIT_PRICE = 40;
+    const SHIPPING_FEE = 3;
+    const TELEGRAM_URL = "https://t.me/cambodia_eyelash_bot";
+
+    let quantity = 1;
+
+    const qtyEl = document.getElementById("qty");
+    const subtotalEl = document.getElementById("subtotal");
+    const shippingEl = document.getElementById("shipping");
+    const totalEl = document.getElementById("total");
+    const statusEl = document.getElementById("status");
+
+    function money(value){
+      return `$${value.toFixed(2)}`;
+    }
+
+    function updateOrder(){
+      const subtotal = UNIT_PRICE * quantity;
+      const shipping = quantity >= 2 ? 0 : SHIPPING_FEE;
+      const total = subtotal + shipping;
+
+      qtyEl.textContent = quantity;
+      subtotalEl.textContent = money(subtotal);
+      shippingEl.textContent = shipping === 0 ? "FREE" : money(shipping);
+      totalEl.textContent = money(total);
+    }
+
+    document.getElementById("minus").addEventListener("click", () => {
+      quantity = Math.max(1, quantity - 1);
+      updateOrder();
+    });
+
+    document.getElementById("plus").addEventListener("click", () => {
+      quantity += 1;
+      updateOrder();
+    });
+
+    document.getElementById("telegramButton").addEventListener("click", () => {
+      const name = document.getElementById("name").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const address = document.getElementById("address").value.trim();
+
+      if (!name || !phone || !address){
+        statusEl.textContent = "Please complete your name, phone number and delivery address.";
+        return;
+      }
+
+      const orderInfo = `Hi, I just paid for my LA SHAUNNIE order.%0A%0A` +
+        `Name: ${encodeURIComponent(name)}%0A` +
+        `Phone: ${encodeURIComponent(phone)}%0A` +
+        `Address: ${encodeURIComponent(address)}%0A` +
+        `Quantity: ${quantity}%0A` +
+        `Total: ${document.getElementById('total').textContent}`;
+
+      statusEl.textContent = "";
+      window.open(`${TELEGRAM_URL}?text=${orderInfo}`, "_blank", "noopener,noreferrer");
+    });
+
+    updateOrder();
+  </script>
+</body>
+</html>

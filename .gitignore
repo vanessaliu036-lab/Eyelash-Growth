@@ -11,3 +11,6 @@
 /_*.png
 .DS_Store
 .vercel
+
+# local-only: Vercel env var 設定 SOP（內含明文 token，僅供本地手動設 env 用）
+SETUP_VERCEL_ENV.md

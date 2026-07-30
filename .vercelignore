@@ -1,0 +1,7 @@
+# Re-enabling api/ — Airtable + Telegram webhook now wired here.
+_screens/
+.DS_Store
+.git/
+.vercel/
+*.pyc
+__pycache__/
