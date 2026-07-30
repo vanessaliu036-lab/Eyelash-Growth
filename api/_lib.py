@@ -57,17 +57,19 @@ def http_download(url: str, timeout: int = 20) -> bytes:
         return resp.read()
 
 
-def airtable_upload_attachment_from_url(table: str, record_id: str,
-                                        field: str, file_url: str,
-                                        filename: str) -> dict:
-    """Tell Airtable to fetch `file_url` and attach it to `field` on the record.
+def airtable_attach_via_patch(table: str, record_id: str, field: str,
+                              file_url: str, filename: str) -> dict:
+    """Attach a remote file to an Airtable record by PATCHing the attachment
+    field with a [{url, filename}] array. Airtable fetches the URL server-side
+    and mirrors the file on its own CDN.
 
-    Airtable will then mirror the file onto its own CDN and return its own
-    signed URL — we don't need to keep the TG-hosted bytes around.
+    Why PATCH instead of POST /uploadAttachment? The uploadAttachment endpoint
+    does not work with non-ASCII field names (returns NOT_FOUND even when the
+    field exists). PATCHing the record with an array works for any field name.
     """
-    url = f"{AIRTABLE_API}/{BASE_ID}/{table}/{record_id}/{field}/uploadAttachment"
-    return http_json("POST", url, airtable_headers(),
-                     {"url": file_url, "filename": filename})
+    url = f"{AIRTABLE_API}/{BASE_ID}/{table}/{record_id}"
+    return http_json("PATCH", url, airtable_headers(),
+                     {"fields": {field: [{"url": file_url, "filename": filename}]}})
 
 
 # --- Airtable ----------------------------------------------------------------

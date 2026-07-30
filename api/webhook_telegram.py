@@ -18,7 +18,7 @@ import time
 sys.path.insert(0, os.path.dirname(__file__))
 from _lib import (
     parse_order_message, find_or_create_customer, create_order_record,
-    find_latest_order_by_tg_user, tg_get_file_url, airtable_upload_attachment_from_url,
+    find_latest_order_by_tg_user, tg_get_file_url, airtable_attach_via_patch,
     ORDERS_TABLE,
     tg_send, tg_call,
 )
@@ -98,7 +98,7 @@ class handler(BaseHTTPRequestHandler):
                             order_id = fields.get("訂單編號", "(no id)")
                             order_id_text = f"\nOrder: <code>{order_id}</code>"
                             try:
-                                airtable_upload_attachment_from_url(
+                                airtable_attach_via_patch(
                                     ORDERS_TABLE, rec_id, "付款截圖", file_url, filename
                                 )
                             except Exception as up_err:
