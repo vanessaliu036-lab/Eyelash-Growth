@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LA SHAUNNIE — Order Management</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500&family=Inter:wght@400;500;600;700;800&display=swap');
+:root{--bg:#f4ead9;--surface:#fffdfa;--surface2:#f8f2e9;--text:#191613;--muted:#7b746d;--line:#dfd4c6;--accent:#8f745b;--accentDark:#765b44;--danger:#c93b32;--success:#52745a;--warning:#a06a2d;--shadow:0 16px 45px rgba(61,45,29,.08)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,select{font:inherit}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:28px 34px;background:var(--surface);border-top:1px solid #dce2d6;border-bottom:1px solid var(--line)}
+.brand{font-family:"Bodoni Moda",Didot,"Times New Roman",serif;font-size:30px;letter-spacing:.13em;line-height:1;transform:scaleX(.96);transform-origin:left center}.brand small{display:block;margin-top:8px;font-family:Inter,sans-serif;font-size:9px;font-weight:600;letter-spacing:.34em;color:var(--muted)}
+.admin-meta{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:13px}.avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#efe3d1;color:var(--accentDark);font-weight:800}
+.page{width:min(1500px,100%);margin:0 auto;padding:34px 26px 50px}.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:24px}.eyebrow{margin:0 0 12px;color:#77706a;font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase}h1{margin:0;font-family:"Bodoni Moda",Didot,"Times New Roman",serif;font-size:clamp(42px,5vw,68px);font-weight:400;line-height:1;letter-spacing:-.045em}.hero p{margin:14px 0 0;color:var(--muted);font-size:14px}.primary-btn{border:0;border-radius:13px;padding:14px 18px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}.primary-btn:hover{background:var(--accentDark)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}.stat{background:rgba(255,253,250,.92);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--shadow)}.stat-label{color:var(--muted);font-size:12px;font-weight:650;text-transform:uppercase;letter-spacing:.08em}.stat-value{margin-top:8px;font-family:"Bodoni Moda",Didot,serif;font-size:32px;line-height:1}.stat-note{margin-top:8px;color:var(--muted);font-size:11px}
+.toolbar{display:grid;grid-template-columns:minmax(260px,1fr) repeat(3,180px) auto;gap:10px;padding:14px;margin-bottom:16px;background:rgba(255,253,250,.92);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}.search,.filter{min-height:44px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--text);outline:none;padding:0 13px}.search:focus,.filter:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(143,116,91,.12)}.ghost-btn{min-height:44px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--text);padding:0 15px;font-weight:650;cursor:pointer}
+.table-card{background:rgba(255,253,250,.96);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);overflow:hidden}.table-wrap{overflow:auto}table{width:100%;min-width:1500px;border-collapse:collapse}thead th{position:sticky;top:0;z-index:2;padding:15px 14px;text-align:left;background:#f7f1e8;border-bottom:1px solid var(--line);color:#38312c;font-size:12px;font-weight:800;white-space:nowrap}tbody td{padding:15px 14px;border-bottom:1px solid #eee5dc;vertical-align:middle;font-size:13px}tbody tr:hover{background:#fcf8f3}.order-id{font-weight:800}.customer{display:flex;align-items:center;gap:10px}.customer-avatar{width:34px;height:34px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;background:#efe3d1;color:var(--accentDark);font-weight:800;font-size:12px}.customer-name{font-weight:750}.customer-sub{margin-top:3px;color:var(--muted);font-size:11px}.money{font-weight:800;white-space:nowrap}.screenshot{width:50px;height:50px;border-radius:10px;border:1px solid var(--line);background:#f4eee7;display:grid;place-items:center;color:var(--muted);font-size:10px;text-align:center;overflow:hidden;cursor:pointer}.screenshot img{width:100%;height:100%;object-fit:cover}.badge{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap}.badge:before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}.pending{background:#fff4dd;color:var(--warning)}.verified{background:#eaf4ec;color:var(--success)}.unpaid{background:#fdecea;color:var(--danger)}.select-status{border:1px solid var(--line);border-radius:9px;background:#fff;padding:8px 10px;font-size:12px;font-weight:650}.note{max-width:230px;color:#625a53;line-height:1.45}.actions{display:flex;gap:7px}.icon-btn{width:34px;height:34px;border:1px solid var(--line);border-radius:9px;background:#fff;cursor:pointer}.footer-row{display:flex;justify-content:space-between;align-items:center;padding:15px 18px;color:var(--muted);font-size:12px}.pagination{display:flex;gap:6px}.page-btn{min-width:34px;height:34px;border:1px solid var(--line);border-radius:9px;background:#fff}.page-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.banner{padding:14px 18px;border-radius:14px;margin-bottom:18px;font-size:13px;font-weight:650}.banner.error{background:#fdecea;color:var(--danger);border:1px solid #ffd3cf}.banner.loading{background:#fff4dd;color:var(--warning);border:1px solid #ffe5b8}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:50}.modal.open{display:flex}.modal-content{background:#fff;border-radius:20px;padding:24px;max-width:90vw;max-height:90vh;display:flex;flex-direction:column;gap:14px}.modal-content img{max-width:80vw;max-height:70vh;object-fit:contain;border-radius:12px}.modal-close{border:0;background:var(--accent);color:#fff;padding:10px 18px;border-radius:10px;cursor:pointer;font-weight:700;align-self:flex-end}
+@media(max-width:1050px){.stats{grid-template-columns:repeat(2,1fr)}.toolbar{grid-template-columns:1fr 1fr}.toolbar .search{grid-column:1/-1}}@media(max-width:620px){.topbar{padding:22px 18px}.brand{font-size:23px}.admin-meta span{display:none}.page{padding:24px 12px 35px}.hero{align-items:flex-start;flex-direction:column}.stats{grid-template-columns:1fr 1fr}.toolbar{grid-template-columns:1fr}.toolbar .search{grid-column:auto}}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="brand">LA SHAUNNIE<small>ORDER MANAGEMENT</small></div><div class="admin-meta"><span>Admin Dashboard</span><div class="avatar">LS</div></div></header>
+<main class="page">
+<section class="hero"><div><p class="eyebrow">Eyelash Serum Orders</p><h1>Order Management</h1><p>Review customer details, verify payments and update shipping progress.</p></div><button class="primary-btn" onclick="exportOrders()">Export Orders</button></section>
+<div id="banner" class="banner loading" style="display:none">Loading…</div>
+<section class="stats">
+  <article class="stat"><div class="stat-label">Total Orders</div><div class="stat-value" id="statTotal">–</div><div class="stat-note">All current records</div></article>
+  <article class="stat"><div class="stat-label">Payment Pending</div><div class="stat-value" id="statPending">–</div><div class="stat-note">Has screenshot, awaiting verification</div></article>
+  <article class="stat"><div class="stat-label">Ready to Ship</div><div class="stat-value" id="statReady">–</div><div class="stat-note">Paid and not yet shipped</div></article>
+  <article class="stat"><div class="stat-label">Revenue</div><div class="stat-value" id="statRevenue">–</div><div class="stat-note">Verified payments only</div></article>
+</section>
+<section class="toolbar">
+  <input id="searchInput" class="search" type="search" placeholder="Search order, customer, phone or Telegram ID">
+  <select id="paymentFilter" class="filter"><option value="">All Payment Status</option><option value="已付款">Paid</option><option value="未付款">Unpaid</option></select>
+  <select id="shippingFilter" class="filter"><option value="">All Shipping Status</option><option value="待出貨">Pending Ship</option><option value="已出貨">Shipped</option><option value="未出貨">Not Shipped</option></select>
+  <select id="quantityFilter" class="filter"><option value="">All Quantities</option><option value="1">1 Bottle</option><option value="2">2+ Bottles</option></select>
+  <button class="ghost-btn" onclick="resetFilters()">Reset</button>
+</section>
+<section class="table-card"><div class="table-wrap"><table><thead><tr><th>Order ID</th><th>Order Date</th><th>Customer</th><th>TG User ID</th><th>Phone</th><th>Address</th><th>Quantity</th><th>Amount</th><th>Payment Screenshot</th><th>Payment Status</th><th>Shipping Status</th><th>Notes</th><th>Actions</th></tr></thead><tbody id="ordersBody"></tbody></table></div><div class="footer-row"><span id="resultCount">Loading…</span><div class="pagination"><button class="page-btn">‹</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">›</button></div></div></section>
+</main>
+<div class="modal" id="shotModal" onclick="closeModal(event)">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal(event)">Close</button>
+    <img id="shotImg" alt="Payment screenshot">
+  </div>
+</div>
+<script>
+// Admin TG ID — set here. In production, prompt on first visit.
+const ADMIN_TG_ID = 6764901662;
+let ALL_ORDERS = [];
+
+const $ = (id) => document.getElementById(id);
+
+function showBanner(msg, kind) {
+  const b = $("banner");
+  b.textContent = msg;
+  b.className = "banner " + (kind || "loading");
+  b.style.display = "block";
+}
+function hideBanner() { $("banner").style.display = "none"; }
+
+function fmtDate(iso) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  const date = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  return { date, time };
+}
+
+function initials(name) {
+  if (!name) return "??";
+  return name.split(/\s+/).map(p => p[0]).join("").slice(0, 2).toUpperCase();
+}
+
+function badge(payment) {
+  if (payment === "已付款") return '<span class="badge verified">Paid</span>';
+  if (payment === "未付款") return '<span class="badge unpaid">Unpaid</span>';
+  return '<span class="badge pending">—</span>';
+}
+
+function escapeHTML(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function screenshotCell(o) {
+  if (!o.screenshot_url) {
+    return '<div class="screenshot">No<br>Image</div>';
+  }
+  return `<div class="screenshot" onclick="openModal('${escapeHTML(o.screenshot_url)}')">
+    <img src="${escapeHTML(o.screenshot_url)}" alt="receipt" loading="lazy">
+  </div>`;
+}
+
+function rowHTML(o) {
+  const dt = fmtDate(o.order_date);
+  return `
+<tr data-payment="${escapeHTML(o.payment_status)}" data-shipping="${escapeHTML(o.shipping_status)}" data-quantity="${o.quantity}">
+  <td class="order-id">${escapeHTML(o.order_id)}</td>
+  <td>${escapeHTML(dt.date)}<br><span class="customer-sub">${escapeHTML(dt.time)}</span></td>
+  <td><div class="customer">
+    <div class="customer-avatar">${escapeHTML(initials(o.customer_name))}</div>
+    <div><div class="customer-name">${escapeHTML(o.customer_name || "—")}</div>
+    <div class="customer-sub">${o.notes && o.notes.includes("補建") ? "Backfilled" : "Telegram order"}</div></div>
+  </div></td>
+  <td>@${escapeHTML(String(o.tg_user_id || "—"))}</td>
+  <td>${escapeHTML(o.customer_phone || "—")}</td>
+  <td>${escapeHTML(o.customer_address || "—")}</td>
+  <td><strong>${o.quantity}</strong></td>
+  <td class="money">$${Number(o.amount || 0).toFixed(2)}</td>
+  <td>${screenshotCell(o)}</td>
+  <td>${badge(o.payment_status)}</td>
+  <td>
+    <select class="select-status" onchange="updateShipping('${escapeHTML(o.id)}', this.value)">
+      <option value="待出貨" ${o.shipping_status === "待出貨" ? "selected" : ""}>Pending Ship</option>
+      <option value="已出貨" ${o.shipping_status === "已出貨" ? "selected" : ""}>Shipped</option>
+      <option value="未出貨" ${o.shipping_status === "未出貨" ? "selected" : ""}>Not Shipped</option>
+    </select>
+  </td>
+  <td class="note">${escapeHTML(o.notes || "")}</td>
+  <td><div class="actions">
+    <button class="icon-btn" title="Mark Paid" onclick="updatePayment('${escapeHTML(o.id)}', '已付款')">✓</button>
+    <button class="icon-btn" title="Mark Unpaid" onclick="updatePayment('${escapeHTML(o.id)}', '未付款')">↺</button>
+  </div></td>
+</tr>`;
+}
+
+function renderTable() {
+  const tb = $("ordersBody");
+  tb.innerHTML = ALL_ORDERS.map(rowHTML).join("");
+  filterRows();
+  renderStats();
+}
+
+function renderStats() {
+  const total = ALL_ORDERS.length;
+  const paid = ALL_ORDERS.filter(o => o.payment_status === "已付款").length;
+  const pending = ALL_ORDERS.filter(o => o.payment_status === "未付款" && o.has_screenshot).length;
+  const ready = ALL_ORDERS.filter(o => o.payment_status === "已付款" && o.shipping_status === "待出貨").length;
+  const revenue = ALL_ORDERS
+    .filter(o => o.payment_status === "已付款")
+    .reduce((s, o) => s + Number(o.amount || 0), 0);
+  $("statTotal").textContent = total;
+  $("statPending").textContent = pending;
+  $("statReady").textContent = ready;
+  $("statRevenue").textContent = "$" + revenue.toFixed(0);
+}
+
+function filterRows() {
+  const s = $("searchInput").value.trim().toLowerCase();
+  const p = $("paymentFilter").value;
+  const sh = $("shippingFilter").value;
+  const q = $("quantityFilter").value;
+  let v = 0;
+  document.querySelectorAll("#ordersBody tr").forEach(r => {
+    const ok = (!s || r.innerText.toLowerCase().includes(s))
+      && (!p || r.dataset.payment === p)
+      && (!sh || r.dataset.shipping === sh)
+      && (!q || (q === "1" && +r.dataset.quantity === 1) || (q === "2" && +r.dataset.quantity >= 2));
+    r.style.display = ok ? "" : "none";
+    if (ok) v++;
+  });
+  $("resultCount").textContent = `Showing ${v} order${v === 1 ? "" : "s"}`;
+}
+
+function resetFilters() {
+  $("searchInput").value = "";
+  $("paymentFilter").value = "";
+  $("shippingFilter").value = "";
+  $("quantityFilter").value = "";
+  filterRows();
+}
+
+async function updatePayment(recId, newStatus) {
+  await patchOrder(recId, { payment_status: newStatus });
+}
+async function updateShipping(recId, newStatus) {
+  await patchOrder(recId, { shipping_status: newStatus });
+  // local update for filter consistency
+  const o = ALL_ORDERS.find(x => x.id === recId);
+  if (o) {
+    o.shipping_status = newStatus;
+    document.querySelector(`tr[data-payment]`);
+    const row = document.querySelector(`#ordersBody tr`);
+    // refresh dataset attribute on the right row by id
+    const trs = document.querySelectorAll("#ordersBody tr");
+    trs.forEach(tr => {
+      if (tr.innerHTML.includes(recId)) tr.dataset.shipping = newStatus;
+    });
+  }
+}
+async function patchOrder(recId, body) {
+  showBanner("Saving…");
+  try {
+    const res = await fetch(`/api/admin/orders?id=${encodeURIComponent(recId)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", "X-Telegram-User-Id": ADMIN_TG_ID },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      showBanner("Failed: " + (e.error || res.status), "error");
+      return;
+    }
+    // update local copy
+    const o = ALL_ORDERS.find(x => x.id === recId);
+    if (o) {
+      if ("payment_status" in body) o.payment_status = body.payment_status;
+      if ("shipping_status" in body) o.shipping_status = body.shipping_status;
+    }
+    renderTable();
+    hideBanner();
+  } catch (e) {
+    showBanner("Error: " + e.message, "error");
+  }
+}
+
+function openModal(url) {
+  $("shotImg").src = url;
+  $("shotModal").classList.add("open");
+}
+function closeModal(ev) {
+  if (ev.target.id === "shotModal" || ev.target.classList.contains("modal-close")) {
+    $("shotModal").classList.remove("open");
+  }
+}
+
+function exportOrders() {
+  const visible = [...document.querySelectorAll("#ordersBody tr")].filter(r => r.style.display !== "none");
+  const head = ["Order ID", "Order Date", "Customer", "TG User ID", "Phone", "Address", "Quantity", "Amount", "Payment Status", "Shipping Status", "Notes"];
+  const out = [head.join(",")];
+  visible.forEach(r => {
+    const c = [...r.querySelectorAll("td")];
+    const vals = [
+      c[0].innerText, c[1].innerText.replace(/\n/g, " "), c[2].innerText.replace(/\n/g, " "),
+      c[3].innerText, c[4].innerText, c[5].innerText, c[6].innerText, c[7].innerText,
+      c[9].innerText, c[10].querySelector("select").value, c[11].innerText,
+    ].map(x => '"' + String(x).replace(/"/g, '""') + '"');
+    out.push(vals.join(","));
+  });
+  const b = new Blob(["\uFEFF" + out.join("\n")], { type: "text/csv;charset=utf-8" });
+  const u = URL.createObjectURL(b);
+  const a = document.createElement("a");
+  a.href = u;
+  a.download = "la-shaunnie-orders.csv";
+  a.click();
+  URL.revokeObjectURL(u);
+}
+
+async function loadOrders() {
+  showBanner("Loading orders from Airtable…");
+  try {
+    const res = await fetch("/api/admin/orders?stats=1", {
+      headers: { "X-Telegram-User-Id": ADMIN_TG_ID },
+    });
+    if (res.status === 401) {
+      showBanner("Unauthorized — TG user ID not in admin list. Set ADMIN_TG_IDS in Vercel env.", "error");
+      return;
+    }
+    if (!res.ok) {
+      showBanner("API error: HTTP " + res.status, "error");
+      return;
+    }
+    const data = await res.json();
+    ALL_ORDERS = data.orders || [];
+    renderTable();
+    hideBanner();
+  } catch (e) {
+    showBanner("Network error: " + e.message, "error");
+  }
+}
+
+["searchInput", "paymentFilter", "shippingFilter", "quantityFilter"].forEach(id => {
+  $(id).addEventListener("input", filterRows);
+  $(id).addEventListener("change", filterRows);
+});
+
+loadOrders();
+setInterval(loadOrders, 30000);  // auto-refresh every 30s
+</script>
+</body>
+</html>
