@@ -21,15 +21,6 @@ from _lib import (
 from urllib.parse import urlparse, parse_qs
 
 
-def _admin_ids() -> list:
-    raw = os.environ.get("ADMIN_TG_IDS", "").strip()
-    return [int(x) for x in raw.split(",") if x.strip().isdigit()]
-
-
-def _is_admin(tg_id: int) -> bool:
-    return tg_id in _admin_ids()
-
-
 def _customer_map(customer_ids: list) -> dict:
     """Batch-load customers to enrich order rows."""
     if not customer_ids:
@@ -94,9 +85,6 @@ class handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         try:
-            tg_id = int(self.headers.get("X-Telegram-User-Id", "0") or "0")
-            if not _is_admin(tg_id):
-                return self._send_json(401, {"error": "unauthorized"})
             url = urlparse(self.path)
             q = parse_qs(url.query)
 
@@ -129,9 +117,6 @@ class handler(BaseHTTPRequestHandler):
 
     def do_PATCH(self):
         try:
-            tg_id = int(self.headers.get("X-Telegram-User-Id", "0") or "0")
-            if not _is_admin(tg_id):
-                return self._send_json(401, {"error": "unauthorized"})
             url = urlparse(self.path)
             q = parse_qs(url.query)
             rec_id = (q.get("id") or [""])[0]
