@@ -162,9 +162,8 @@ class handler(BaseHTTPRequestHandler):
                     f"Order ID: <code>{order_id}</code>\n"
                     f"Quantity: {order['quantity']}\n"
                     f"Total: ${order['total']:.2f}\n\n"
-                    f"Our team will verify your payment and confirm shortly. "
-                    f"You'll get a Telegram message here when your order ships. "
-                    f"Send your payment screenshot if you haven't already 🙏")
+                    f"After payment, send your payment screenshot here and I'll "
+                    f"attach it to your order. Our team will verify and confirm 🙏")
 
             return self._ok()
 

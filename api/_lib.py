@@ -215,6 +215,6 @@ def create_order_record(customer_id: str, order: dict, tg_user_id: int,
         "地址": order["address"],
         "訂購數量": order["quantity"],
         "金額": order["total"],
-        "付款狀態": "已付款",
+        "付款狀態": "未付款",
         "出貨狀態": "待出貨",
     })
