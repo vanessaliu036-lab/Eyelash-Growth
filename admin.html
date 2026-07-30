@@ -40,7 +40,7 @@ td.col-id{font-family:"SF Mono",Menlo,monospace;font-size:11px}
   <select id="quantityFilter" class="filter"><option value="">All Quantities</option><option value="1">1 Bottle</option><option value="2">2+ Bottles</option></select>
   <button class="ghost-btn" onclick="resetFilters()">Reset</button>
 </section>
-<section class="table-card"><div class="table-wrap"><table><thead><tr><th class="col-id">Order ID</th><th class="col-date">Order Date</th><th class="col-customer">Customer</th><th class="col-tg">TG User ID</th><th class="col-phone">Phone</th><th class="col-addr">Address</th><th class="col-qty">Quantity</th><th class="col-amount">Amount</th><th class="col-acct">Acct 4</th><th class="col-pay">Payment</th><th class="col-ship">Shipping</th><th class="col-track">Tracking</th></tr></thead><tbody id="ordersBody"></tbody></table></div><div class="footer-row"><span id="resultCount">Loading…</span></div></section>
+<section class="table-card"><div class="table-wrap"><table><thead><tr><th class="col-id">Order ID</th><th class="col-date">Order Date</th><th class="col-customer">Customer</th><th class="col-tg">TG User ID</th><th class="col-phone">Phone</th><th class="col-addr">Address</th><th class="col-qty">Quantity</th><th class="col-amount">Amount</th><th class="col-acct">Acct 4</th><th class="col-pay">Payment</th><th class="col-track">Tracking</th><th class="col-ship">Shipping</th></tr></thead><tbody id="ordersBody"></tbody></table></div><div class="footer-row"><span id="resultCount">Loading…</span></div></section>
 </main>
 <div class="modal" id="shotModal" onclick="closeModal(event)">
   <div class="modal-content">
@@ -128,12 +128,12 @@ function rowHTML(o) {
       <option value="已付款" ${o.payment_status === "已付款" ? "selected" : ""}>Paid</option>
     </select>
   </td>
+  <td class="col-track"><input class="track-input" type="text" placeholder="Tracking #" value="${escapeHTML(o.tracking_number || '')}" onblur="saveTracking('${escapeHTML(o.id)}', this.value)" ${o.shipping_status === '已出貨' ? 'disabled' : ''}></td>
   <td class="col-ship">
     ${o.shipping_status === "已出貨"
       ? `<button class="ship-btn ship-btn-done" disabled>✓ Shipped</button>`
       : `<button class="ship-btn" onclick="onShipClick('${escapeHTML(o.id)}', this)">Mark Shipped</button>`}
   </td>
-  <td class="col-track"><input class="track-input" type="text" placeholder="Tracking #" value="${escapeHTML(o.tracking_number || '')}" onblur="saveTracking('${escapeHTML(o.id)}', this.value)" ${o.shipping_status === '已出貨' ? 'disabled' : ''}></td>
 </tr>`;
 }
 
