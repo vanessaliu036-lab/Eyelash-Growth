@@ -50,6 +50,26 @@ def http_json(method: str, url: str, headers: dict, body: Any = None,
         raise RuntimeError(f"{method} {url} -> {e.code}: {body[:300]}")
 
 
+def http_download(url: str, timeout: int = 20) -> bytes:
+    """Download a URL to raw bytes (used for TG file downloads)."""
+    req = Request(url)
+    with urlopen(req, timeout=timeout) as resp:
+        return resp.read()
+
+
+def airtable_upload_attachment_from_url(table: str, record_id: str,
+                                        field: str, file_url: str,
+                                        filename: str) -> dict:
+    """Tell Airtable to fetch `file_url` and attach it to `field` on the record.
+
+    Airtable will then mirror the file onto its own CDN and return its own
+    signed URL — we don't need to keep the TG-hosted bytes around.
+    """
+    url = f"{AIRTABLE_API}/{BASE_ID}/{table}/{record_id}/{field}/uploadAttachment"
+    return http_json("POST", url, airtable_headers(),
+                     {"url": file_url, "filename": filename})
+
+
 # --- Airtable ----------------------------------------------------------------
 
 def airtable_headers() -> dict:
@@ -88,6 +108,28 @@ def tg_call(method: str, **params: Any) -> dict:
 def tg_send(chat_id, text: str, parse_mode: str = "HTML") -> dict:
     return tg_call("sendMessage", chat_id=str(chat_id), text=text,
                    parse_mode=parse_mode, disable_web_page_preview=True)
+
+
+def tg_get_file_url(file_id: str) -> str:
+    """Resolve a TG file_id to a downloadable HTTPS URL (valid ~1h)."""
+    info = tg_call("getFile", file_id=file_id)
+    path = info.get("result", {}).get("file_path", "")
+    if not path:
+        raise RuntimeError(f"getFile returned no file_path for {file_id}")
+    return f"https://api.telegram.org/file/bot{env('TELEGRAM_BOT_TOKEN')}/{path}"
+
+
+def find_latest_order_by_tg_user(tg_user_id: int) -> Optional[dict]:
+    """Most recent order for this TG user, or None."""
+    rows = airtable_list(
+        ORDERS_TABLE,
+        formula=f"{{TG 用戶 ID}}={int(tg_user_id)}",
+        max_records=5,
+    )
+    if not rows:
+        return None
+    rows.sort(key=lambda r: r.get("fields", {}).get("下單日期", ""), reverse=True)
+    return rows[0]
 
 
 # --- Order id ---------------------------------------------------------------

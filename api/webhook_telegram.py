@@ -12,11 +12,13 @@ from http.server import BaseHTTPRequestHandler
 import json
 import sys
 import os
+import time
 
 # Make _lib importable
 sys.path.insert(0, os.path.dirname(__file__))
 from _lib import (
     parse_order_message, find_or_create_customer, create_order_record,
+    find_latest_order_by_tg_user, tg_get_file_url, airtable_upload_attachment_from_url,
     tg_send, tg_call,
 )
 
@@ -73,13 +75,55 @@ class handler(BaseHTTPRequestHandler):
             order = parse_order_message(text)
             if not order or not chat_id or not tg_user_id:
                 # Not a parseable order — try to be helpful based on what we got
-                has_photo = bool(message.get("photo"))
+                photos = message.get("photo") or []
                 caption = (message.get("caption") or "").strip()
-                if has_photo:
-                    tg_send(chat_id,
-                            "🧾 <b>Payment screenshot received</b>\n\n"
-                            "Thanks — our team will verify it and confirm your order shortly. "
-                            "Hang tight 🙏")
+                if photos:
+                    try:
+                        # Pick the largest photo (last in the array)
+                        largest = photos[-1]
+                        file_id = largest.get("file_id")
+                        file_url = tg_get_file_url(file_id)
+                        ext = file_url.rsplit(".", 1)[-1].lower()
+                        if ext not in ("jpg", "jpeg", "png", "webp"):
+                            ext = "jpg"
+                        filename = f"payment_{tg_user_id or 'anon'}_{int(time.time())}.{ext}"
+
+                        # Find this user's most recent order
+                        latest = find_latest_order_by_tg_user(tg_user_id) if tg_user_id else None
+                        order_id_text = ""
+                        if latest:
+                            rec_id = latest["id"]
+                            fields = latest.get("fields", {})
+                            order_id = fields.get("訂單編號", "(no id)")
+                            order_id_text = f"\nOrder: <code>{order_id}</code>"
+                            try:
+                                airtable_upload_attachment_from_url(
+                                    "訂單", rec_id, "付款截圖", file_url, filename
+                                )
+                            except Exception as up_err:
+                                # Attachment failed — still acknowledge the message
+                                print(f"[webhook_telegram] upload err: {up_err}", file=sys.stderr)
+                                tg_send(chat_id,
+                                        "🧾 Got the screenshot, but I couldn't attach it to "
+                                        "your order record. Our team will follow up manually 🙏")
+                                return self._ok()
+                        else:
+                            # No prior order from this TG user — store on its own
+                            tg_send(chat_id,
+                                    "🧾 Got your screenshot. We don't see a recent order from "
+                                    "this account — our team will follow up to link it 🙏")
+                            return self._ok()
+
+                        tg_send(chat_id,
+                                f"✅ <b>Payment screenshot received</b>{order_id_text}\n\n"
+                                f"Thanks — our team will verify it and confirm your order shortly. "
+                                f"Hang tight 🙏")
+                    except Exception as photo_err:
+                        print(f"[webhook_telegram] photo err: {photo_err}", file=sys.stderr)
+                        tg_send(chat_id,
+                                "🧾 Got your screenshot, but something went wrong saving it. "
+                                "Our team will follow up manually 🙏")
+                    return self._ok()
                 elif caption:
                     tg_send(chat_id,
                             "Got it ✉️ If you're placing an order, please use "
