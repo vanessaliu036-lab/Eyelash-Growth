@@ -17,6 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from _lib import (
     env, airtable_headers, airtable_list, airtable_update,
     http_json, AIRTABLE_API, ORDERS_TABLE, CUSTOMERS_TABLE,
+    tg_send,
 )
 from urllib.parse import urlparse, parse_qs
 
@@ -56,10 +57,12 @@ def _shape_order(rec: dict, customers: dict) -> dict:
         "customer_phone": phone,
         "customer_address": address,
         "tg_user_id": f.get("TG 用戶 ID"),
+        "account4": f.get("帳號後四碼", ""),
         "quantity": f.get("訂購數量", 0),
         "amount": f.get("金額", 0),
         "payment_status": f.get("付款狀態", ""),
         "shipping_status": f.get("出貨狀態", ""),
+        "tracking_number": f.get("物流編號", ""),
         "notes": f.get("備註", ""),
         "screenshot_url": screenshot_url,
         "has_screenshot": bool(shots),
@@ -132,6 +135,10 @@ class handler(BaseHTTPRequestHandler):
                 allowed["付款狀態"] = body["payment_status"]
             if "shipping_status" in body and body["shipping_status"] in ("待出貨", "已出貨", "未出貨"):
                 allowed["出貨狀態"] = body["shipping_status"]
+            if "tracking_number" in body:
+                allowed["物流編號"] = str(body["tracking_number"])[:200]
+            if "account4" in body:
+                allowed["帳號後四碼"] = str(body["account4"])[:4]
             if "notes" in body:
                 allowed["備註"] = str(body["notes"])[:2000]
 
@@ -139,7 +146,78 @@ class handler(BaseHTTPRequestHandler):
                 return self._send_json(400, {"error": "nothing to update"})
 
             updated = airtable_update(ORDERS_TABLE, rec_id, allowed)
-            return self._send_json(200, {"ok": True, "fields": updated.get("fields", {})})
+            updated_fields = updated.get("fields", {})
+
+            # If a status flipped, push a Telegram message to the customer.
+            tg_pushed = None
+            try:
+                tg_pushed = self._maybe_notify(rec_id, updated_fields, body)
+            except Exception as notify_err:
+                print(f"[admin/orders] notify err: {notify_err}", file=sys.stderr)
+
+            return self._send_json(200, {
+                "ok": True,
+                "fields": updated_fields,
+                "tg_pushed": tg_pushed,
+            })
         except Exception as e:
             print(f"[admin/orders] PATCH err: {e}", file=sys.stderr)
             return self._send_json(500, {"error": str(e)})
+
+    def _maybe_notify(self, rec_id, updated_fields, body):
+        """Push TG if payment or shipping just flipped to a milestone."""
+        order_id = updated_fields.get("訂單編號", "(unknown)")
+        tg_user_id = updated_fields.get("TG 用戶 ID")
+        if not tg_user_id:
+            return None
+
+        patched_payment = "payment_status" in body
+        patched_shipping = "shipping_status" in body
+        if not (patched_payment or patched_shipping):
+            return None
+
+        if patched_payment and updated_fields.get("付款狀態") == "已付款":
+            msg = (
+                f"💰 <b>Payment received</b>\n\n"
+                f"Order: <code>{order_id}</code>\n\n"
+                f"Thanks — our team have confirmed your order already. "
+                f"Will arrange the shipping as soon as possible! "
+                f"Have a nice day :)"
+            )
+            tg_send(int(tg_user_id), msg)
+            self._append_notify_note(rec_id, "付款通知已 TG 推播")
+            return "paid"
+
+        if patched_shipping and updated_fields.get("出貨狀態") == "已出貨":
+            tracking = updated_fields.get("物流編號", "")
+            track_line = f"\nTracking: <code>{tracking}</code>" if tracking else ""
+            qty = updated_fields.get("訂購數量", "")
+            msg = (
+                f"📦 <b>Your LA SHAUNNIE order is on the way</b>\n\n"
+                f"Order: <code>{order_id}</code>\n"
+                f"Quantity: {qty}{track_line}\n\n"
+                f"Estimated delivery within 1–2 days. Reach out any time "
+                f"via this chat if you need anything 🙏"
+            )
+            tg_send(int(tg_user_id), msg)
+            self._append_notify_note(rec_id, "出貨通知已 TG 推播")
+            return "shipped"
+
+        return None
+
+    def _append_notify_note(self, rec_id, mark):
+        try:
+            target = None
+            for r in airtable_list(ORDERS_TABLE, max_records=100):
+                if r["id"] == rec_id:
+                    target = r
+                    break
+            cur = (target.get("fields", {}).get("備註") if target else "") or ""
+            if mark in cur:
+                return
+            import datetime as _dt
+            stamp = _dt.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+            new_note = (cur + ("\n" if cur else "") + f"{mark} {stamp}").strip()
+            airtable_update(ORDERS_TABLE, rec_id, {"備註": new_note})
+        except Exception as e:
+            print(f"[admin/orders] append note failed: {e}", file=sys.stderr)
