@@ -279,6 +279,13 @@ footer p{color:#6b625a}
 .results-carousel .car-arrow{top:42%}
 @media(max-width:560px){.results-carousel{padding:0}.results-carousel .car-slide{padding:0 34px}.results-carousel .rc img{max-width:78vw;max-height:52vh}.results-carousel .car-viewport{padding-bottom:20px}}
 
+/* ===== Testimonial video (between results-head and results-carousel) ===== */
+.testimonial-video{max-width:900px;margin:clamp(32px,4vw,48px) auto 0;padding:0 18px}
+.testimonial-video video{width:100%;height:auto;aspect-ratio:16/9;display:block;background:#000;border-radius:4px;box-shadow:0 14px 34px rgba(65,47,32,.1);overflow:hidden}
+.testimonial-caption{text-align:center;margin-top:18px;color:#4f4943;font-size:15px;line-height:1.6}
+.testimonial-caption small{display:block;letter-spacing:.18em;text-transform:uppercase;color:#8a7f74;font-size:11px;margin-bottom:4px}
+@media(max-width:560px){.testimonial-video{padding:0}}
+
 /* ===== Type-banner marquee (right-to-left) ===== */
 .type-banner{background:#f7f2ec;border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;padding:0;margin-top:96px;margin-bottom:0}
 .marquee{position:relative;width:100%;overflow:hidden;display:flex;align-items:center;min-height:46px;mask-image:linear-gradient(90deg,transparent 0,#000 8%,#000 92%,transparent 100%);-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 8%,#000 92%,transparent 100%)}
@@ -356,6 +363,12 @@ footer p{color:#6b625a}
   <div class="results-head">
     <div><div class="eyebrow">Client transformation</div><h2>Real lashes.<br>Real progress.</h2></div>
     <p>See visible changes in lash length, density, and overall appearance with consistent use. Individual results may vary depending on your natural lash cycle and condition.</p>
+  </div>
+  <div class="testimonial-video">
+    <video controls playsinline preload="metadata" poster="img/testimonial-poster.jpg" aria-label="Real client sharing her eyelash growth transformation with LA SHAUNNIE">
+      <source src="img/testimonial.mp4" type="video/mp4">
+    </video>
+    <p class="testimonial-caption"><small>Real client story</small>Hear her experience, then see the results below.</p>
   </div>
   <div class="carousel results-carousel" data-carousel data-autoplay="5200" aria-label="Before and after results">
     <div class="car-viewport"><div class="car-track">
