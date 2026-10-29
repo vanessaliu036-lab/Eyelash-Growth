@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>LA SHAUNNIE — Order Management</title>
+<title>LA SHAUNNIE｜訂單管理後台</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500&family=Inter:wght@400;500;600;700;800&display=swap');
 :root{--bg:#f4ead9;--surface:#fffdfa;--surface2:#f8f2e9;--text:#191613;--muted:#7b746d;--line:#dfd4c6;--accent:#8f745b;--accentDark:#765b44;--danger:#c93b32;--success:#52745a;--warning:#a06a2d;--shadow:0 16px 45px rgba(61,45,29,.08)}
@@ -20,32 +20,35 @@ td.col-id{font-family:"SF Mono",Menlo,monospace;font-size:11px}
 .banner{position:fixed;top:18px;right:18px;z-index:50;padding:12px 18px;border-radius:12px;font-size:13px;font-weight:650;box-shadow:0 12px 32px rgba(60,42,26,.18);max-width:360px}.banner.error{background:#fdecea;color:var(--danger);border:1px solid #ffd3cf}.banner.loading{background:#fff4dd;color:var(--warning);border:1px solid #ffe5b8}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:50}.modal.open{display:flex}.modal-content{background:#fff;border-radius:20px;padding:24px;max-width:90vw;max-height:90vh;display:flex;flex-direction:column;gap:14px}.modal-content img{max-width:80vw;max-height:70vh;object-fit:contain;border-radius:12px}.modal-close{border:0;background:var(--accent);color:#fff;padding:10px 18px;border-radius:10px;cursor:pointer;font-weight:700;align-self:flex-end}
 @media(max-width:1050px){.stats{grid-template-columns:repeat(2,1fr)}.toolbar{grid-template-columns:1fr 1fr}.toolbar .search{grid-column:1/-1}}@media(max-width:620px){.topbar{padding:22px 18px}.brand{font-size:23px}.admin-meta span{display:none}.page{padding:24px 12px 35px}.hero{align-items:flex-start;flex-direction:column}.stats{grid-template-columns:1fr 1fr}.toolbar{grid-template-columns:1fr}.toolbar .search{grid-column:auto}}
+
+body{font-family:"Inter","PingFang TC","Microsoft JhengHei","Noto Sans TC",Arial,sans-serif}
+h1{font-family:"Bodoni Moda","Songti TC","Noto Serif TC","PMingLiU",Georgia,serif}
 </style>
 </head>
 <body>
-<div id="banner" class="banner loading" style="display:none">Loading…</div>
-<header class="topbar"><div class="brand">LA SHAUNNIE<small>ORDER MANAGEMENT</small></div><div class="admin-meta"><a href="index.html" class="nav-link">Home</a><a href="order.html" class="nav-link">Order Page</a></div></header>
+<div id="banner" class="banner loading" style="display:none">載入中…</div>
+<header class="topbar"><div class="brand">LA SHAUNNIE<small>訂單管理</small></div><div class="admin-meta"><a href="index.html" class="nav-link">首頁</a><a href="order.html" class="nav-link">訂購頁面</a></div></header>
 <main class="page">
-<section class="hero"><div><p class="eyebrow">Eyelash Serum Orders</p><h1>Order Management</h1><p>Review customer details, verify payments and update shipping progress.</p></div><button class="primary-btn" onclick="exportOrders()">Export Orders</button></section>
+<section class="hero"><div><p class="eyebrow">睫毛精華訂單</p><h1>訂單管理</h1><p>查看顧客資料、核對付款並更新配送進度。</p></div><button class="primary-btn" onclick="exportOrders()">匯出訂單</button></section>
 <section class="stats">
-  <article class="stat"><div class="stat-label">Total Orders</div><div class="stat-value" id="statTotal">–</div><div class="stat-note">All current records</div></article>
-  <article class="stat"><div class="stat-label">Payment Pending</div><div class="stat-value" id="statPending">–</div><div class="stat-note">Has screenshot, awaiting verification</div></article>
-  <article class="stat"><div class="stat-label">Ready to Ship</div><div class="stat-value" id="statReady">–</div><div class="stat-note">Paid and not yet shipped</div></article>
-  <article class="stat"><div class="stat-label">Revenue</div><div class="stat-value" id="statRevenue">–</div><div class="stat-note">Verified payments only</div></article>
+  <article class="stat"><div class="stat-label">訂單總數</div><div class="stat-value" id="statTotal">–</div><div class="stat-note">目前所有訂單紀錄</div></article>
+  <article class="stat"><div class="stat-label">待核對付款</div><div class="stat-value" id="statPending">–</div><div class="stat-note">已提供截圖，等待核對</div></article>
+  <article class="stat"><div class="stat-label">待安排出貨</div><div class="stat-value" id="statReady">–</div><div class="stat-note">已付款、尚未出貨</div></article>
+  <article class="stat"><div class="stat-label">已確認營收</div><div class="stat-value" id="statRevenue">–</div><div class="stat-note">僅統計已確認付款</div></article>
 </section>
 <section class="toolbar">
-  <input id="searchInput" class="search" type="search" placeholder="Search order, customer, phone or Telegram ID">
-  <select id="paymentFilter" class="filter"><option value="">All Payment Status</option><option value="已付款">Paid</option><option value="未付款">Unpaid</option></select>
-  <select id="shippingFilter" class="filter"><option value="">All Shipping Status</option><option value="待出貨">Pending Ship</option><option value="已出貨">Shipped</option><option value="未出貨">Not Shipped</option></select>
-  <select id="quantityFilter" class="filter"><option value="">All Quantities</option><option value="1">1 Bottle</option><option value="2">2+ Bottles</option></select>
-  <button class="ghost-btn" onclick="resetFilters()">Reset</button>
+  <input id="searchInput" class="search" type="search" placeholder="搜尋訂單、顧客、電話或 Telegram ID">
+  <select id="paymentFilter" class="filter"><option value="">全部付款狀態</option><option value="已付款">已付款</option><option value="未付款">未付款</option></select>
+  <select id="shippingFilter" class="filter"><option value="">全部出貨狀態</option><option value="待出貨">待出貨</option><option value="已出貨">已出貨</option><option value="未出貨">未出貨</option></select>
+  <select id="quantityFilter" class="filter"><option value="">全部購買數量</option><option value="1">1 瓶</option><option value="2">2 瓶以上</option></select>
+  <button class="ghost-btn" onclick="resetFilters()">重設篩選</button>
 </section>
-<section class="table-card"><div class="table-wrap"><table><thead><tr><th class="col-id">Order ID</th><th class="col-date">Order Date</th><th class="col-customer">Customer</th><th class="col-tg">TG User ID</th><th class="col-phone">Phone</th><th class="col-addr">Address</th><th class="col-qty">Quantity</th><th class="col-amount">Amount</th><th class="col-acct">Acct 4</th><th class="col-pay">Payment</th><th class="col-track">Tracking</th><th class="col-ship">Shipping</th></tr></thead><tbody id="ordersBody"></tbody></table></div><div class="footer-row"><span id="resultCount">Loading…</span></div></section>
+<section class="table-card"><div class="table-wrap"><table><thead><tr><th class="col-id">訂單編號</th><th class="col-date">訂購日期</th><th class="col-customer">顧客</th><th class="col-tg">TG 使用者 ID</th><th class="col-phone">電話</th><th class="col-addr">地址</th><th class="col-qty">數量</th><th class="col-amount">金額</th><th class="col-acct">帳號末四碼</th><th class="col-pay">付款狀態</th><th class="col-track">物流單號</th><th class="col-ship">配送狀態</th></tr></thead><tbody id="ordersBody"></tbody></table></div><div class="footer-row"><span id="resultCount">載入中…</span></div></section>
 </main>
 <div class="modal" id="shotModal" onclick="closeModal(event)">
   <div class="modal-content">
-    <button class="modal-close" onclick="closeModal(event)">Close</button>
-    <img id="shotImg" alt="Payment screenshot">
+    <button class="modal-close" onclick="closeModal(event)">關閉</button>
+    <img id="shotImg" alt="付款截圖">
   </div>
 </div>
 <script>
@@ -67,8 +70,8 @@ function fmtDate(iso) {
   if (!iso) return "—";
   const d = new Date(iso);
   if (isNaN(d.getTime())) return iso;
-  const date = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-  const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  const date = d.toLocaleDateString("zh-TW", { month: "short", day: "numeric", year: "numeric" });
+  const time = d.toLocaleTimeString("zh-TW", { hour: "numeric", minute: "2-digit" });
   return { date, time };
 }
 
@@ -78,8 +81,8 @@ function initials(name) {
 }
 
 function badge(payment) {
-  if (payment === "已付款") return '<span class="badge verified">Paid</span>';
-  if (payment === "未付款") return '<span class="badge unpaid">Unpaid</span>';
+  if (payment === "已付款") return '<span class="badge verified">已付款</span>';
+  if (payment === "未付款") return '<span class="badge unpaid">未付款</span>';
   return '<span class="badge pending">—</span>';
 }
 
@@ -91,10 +94,10 @@ function escapeHTML(s) {
 
 function screenshotCell(o) {
   if (!o.screenshot_url) {
-    return '<div class="screenshot">No<br>Image</div>';
+    return '<div class="screenshot">無<br>圖片</div>';
   }
   return `<div class="screenshot" onclick="openModal('${escapeHTML(o.screenshot_url)}')">
-    <img src="${escapeHTML(o.screenshot_url)}" alt="receipt" loading="lazy">
+    <img src="${escapeHTML(o.screenshot_url)}" alt="付款憑證" loading="lazy">
   </div>`;
 }
 
@@ -114,24 +117,24 @@ function rowHTML(o) {
   <td class="col-customer"><div class="customer-wrap"><div class="customer">
     <div class="customer-avatar">${escapeHTML(initials(o.customer_name))}</div>
     <div><div class="customer-name" title="${escapeHTML(o.customer_name || '')}">${escapeHTML(o.customer_name || "—")}</div>
-    <div class="customer-sub">${o.tracking_number ? "Tracked" : "Pending"}</div></div>
+    <div class="customer-sub">${o.tracking_number ? "已填物流單號" : "待處理"}</div></div>
   </div></div></td>
   <td class="col-tg">@${escapeHTML(String(o.tg_user_id || "—"))}</td>
   <td class="col-phone" title="${escapeHTML(o.customer_phone || '')}">${escapeHTML(o.customer_phone || "—")}</td>
   <td class="col-addr" title="${escapeHTML(o.customer_address || '')}">${escapeHTML(o.customer_address || "—")}</td>
   <td class="col-qty"><strong>${o.quantity}</strong></td>
   <td class="col-amount money">$${Number(o.amount || 0).toFixed(2)}</td>
-  <td class="col-acct" title="Bank account last 4">${escapeHTML(o.account4 || "—")}</td>
+  <td class="col-acct" title="銀行帳號末四碼">${escapeHTML(o.account4 || "—")}</td>
   <td class="col-pay">
     ${o.payment_status === "已付款"
-      ? `<button class="pay-btn pay-btn-done" disabled>✓ Paid</button>`
-      : `<button class="pay-btn" onclick="onPayClick('${escapeHTML(o.id)}', this)">Mark Paid</button>`}
+      ? `<button class="pay-btn pay-btn-done" disabled>✓ 已付款</button>`
+      : `<button class="pay-btn" onclick="onPayClick('${escapeHTML(o.id)}', this)">確認付款</button>`}
   </td>
-  <td class="col-track"><input class="track-input" type="text" placeholder="Tracking #" value="${escapeHTML(o.tracking_number || '')}" onblur="saveTracking('${escapeHTML(o.id)}', this.value)" ${o.shipping_status === '已出貨' ? 'disabled' : ''}></td>
+  <td class="col-track"><input class="track-input" type="text" placeholder="物流單號" value="${escapeHTML(o.tracking_number || '')}" onblur="saveTracking('${escapeHTML(o.id)}', this.value)" ${o.shipping_status === '已出貨' ? 'disabled' : ''}></td>
   <td class="col-ship">
     ${o.shipping_status === "已出貨"
-      ? `<button class="ship-btn ship-btn-done" disabled>✓ Shipped</button>`
-      : `<button class="ship-btn" onclick="onShipClick('${escapeHTML(o.id)}', this)">Mark Shipped</button>`}
+      ? `<button class="ship-btn ship-btn-done" disabled>✓ 已出貨</button>`
+      : `<button class="ship-btn" onclick="onShipClick('${escapeHTML(o.id)}', this)">標記已出貨</button>`}
   </td>
 </tr>`;
 }
@@ -171,7 +174,7 @@ function filterRows() {
     r.style.display = ok ? "" : "none";
     if (ok) v++;
   });
-  $("resultCount").textContent = `Showing ${v} order${v === 1 ? "" : "s"}`;
+  $("resultCount").textContent = `顯示 ${v} 筆訂單`;
 }
 
 function resetFilters() {
@@ -191,7 +194,7 @@ async function onShipClick(recId, btn) {
   const tracking = (trackInput.value || "").trim();
   if (!tracking) {
     trackInput.focus();
-    showBanner("Please enter a tracking number first.", "error");
+    showBanner("請先填寫物流單號。", "error");
     return;
   }
   await patchOrder(recId, { shipping_status: "已出貨", tracking_number: tracking });
@@ -201,7 +204,7 @@ async function saveTracking(recId, value) {
   await patchOrder(recId, { tracking_number: v });
 }
 async function patchOrder(recId, body) {
-  showBanner("Saving…");
+  showBanner("儲存中…");
   try {
     const res = await fetch(`/api/admin/orders?id=${encodeURIComponent(recId)}`, {
       method: "PATCH",
@@ -210,7 +213,7 @@ async function patchOrder(recId, body) {
     });
     if (!res.ok) {
       const e = await res.json().catch(() => ({}));
-      showBanner("Failed: " + (e.error || res.status), "error");
+      showBanner("更新失敗：" + (e.error || res.status), "error");
       return;
     }
     // update local copy
@@ -224,7 +227,7 @@ async function patchOrder(recId, body) {
     renderTable();
     hideBanner();
   } catch (e) {
-    showBanner("Error: " + e.message, "error");
+    showBanner("錯誤：" + e.message, "error");
   }
 }
 
@@ -240,7 +243,7 @@ function closeModal(ev) {
 
 function exportOrders() {
   const visible = [...document.querySelectorAll("#ordersBody tr")].filter(r => r.style.display !== "none");
-  const head = ["Order ID", "Order Date", "Customer", "TG User ID", "Phone", "Address", "Quantity", "Amount", "Payment Status", "Shipping Status", "Notes"];
+  const head = ["訂單編號", "訂購日期", "顧客", "TG 使用者 ID", "電話", "地址", "數量", "金額", "付款狀態", "配送狀態", "備註"];
   const out = [head.join(",")];
   visible.forEach(r => {
     const c = [...r.querySelectorAll("td")];
@@ -261,13 +264,13 @@ function exportOrders() {
 }
 
 async function loadOrders() {
-  showBanner("Loading orders from Airtable…");
+  showBanner("正在從 Airtable 讀取訂單…");
   try {
     const res = await fetch("/api/admin/orders?stats=1", {
       headers: { "X-Telegram-User-Id": String(ADMIN_TG_ID) },
     });
     if (!res.ok) {
-      showBanner("API error: HTTP " + res.status, "error");
+      showBanner("API 錯誤：HTTP " + res.status, "error");
       return;
     }
     const data = await res.json();
@@ -275,7 +278,7 @@ async function loadOrders() {
     renderTable();
     hideBanner();
   } catch (e) {
-    showBanner("Network error: " + e.message, "error");
+    showBanner("網路錯誤：" + e.message, "error");
   }
 }
 
