@@ -295,13 +295,21 @@ footer p{color:#6b625a}
 @keyframes marquee-rtl{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 .type-banner:hover .marquee-track{animation-play-state:paused}
 @media (prefers-reduced-motion: reduce){.marquee-track{animation:none;transform:translateX(0)}}
+
+/* Independent partner page entry; all existing storefront styles remain unchanged. */
+header .partner-mobile-link{display:none}
+header nav .partner-header-link{white-space:nowrap}
+@media (min-width:901px) and (max-width:1199px){header nav{gap:14px;font-size:11px;letter-spacing:.065em}}
+@media (max-width:900px){header .partner-mobile-link{display:inline-flex;position:absolute;right:16px;top:50%;transform:translateY(-50%);align-items:center;justify-content:center;min-height:34px;padding:7px 9px;border:1px solid var(--line);background:var(--paper);font-size:10px;letter-spacing:.02em;line-height:1.1;white-space:nowrap}}
+
 </style>
 </head>
 <body class="loading">
 <div class="loader"><div class="loader-inner"><div class="loader-logo">LA SHAUNNIE</div><div class="loader-line"></div><div class="loader-copy">Eyelash Growth Serum</div></div></div>
 <header>
   <div class="logo">LA SHAUNNIE</div>
-  <nav><a href="#story">Story</a><a href="#cycle">Growth cycle</a><a href="#ingredients">Ingredients</a><a href="#routine">How to use</a><a href="#shop">Shop</a></nav>
+  <nav><a href="#story">Story</a><a href="#cycle">Growth cycle</a><a href="#ingredients">Ingredients</a><a href="#routine">How to use</a><a href="#shop">Shop</a><a class="partner-header-link" href="/partner.html" target="_blank" rel="noopener noreferrer">Become a Partner</a></nav>
+  <a class="partner-mobile-link" href="/partner.html" target="_blank" rel="noopener noreferrer" aria-label="Become a Partner (opens in a new tab)">Become a Partner</a>
   <a class="actions" href="admin.html">Admin</a>
 </header>
 
