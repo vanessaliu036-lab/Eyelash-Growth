@@ -22,6 +22,7 @@
       const source = document.createElement('source');
       source.src = src; source.type = 'video/mp4';
       video.appendChild(source);
+      if (poster) video.poster = poster.src;
       if (placeholder) placeholder.hidden = true;
       if (poster) poster.hidden = true;
       video.hidden = false;
