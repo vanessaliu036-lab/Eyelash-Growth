@@ -1,15 +1,15 @@
 # LA SHAUNNIE credit-card checkout — staging
 
 ## Commercial rules
-- LA SHAUNNIE Lash Serum: **US$45 per bottle**.
-- **2+ bottles: free shipping** in listed supported delivery destinations.
-- 1 bottle to Singapore, Malaysia, Vietnam, Indonesia, Hong Kong: automatically quoted at **Taiwan Post international ePacket Asia** tariff (NT$100 first 100g, +NT$20 per next 100g), currently published April 2026.
-- Starting one-bottle packed weight **200g estimate** => **NT$120**. Replace it with the measured packed weight in LA_PACKED_WEIGHT_GRAMS before accepting real orders.
-- Optional **SF Express** comparison: only a verified quote entered in LA_SF_QUOTE_TWD_[country], with future LA_SF_QUOTE_VALID_THROUGH, can be selected if cheaper. This is not a live SF API and must not be presented as one.
-- Existing Cambodia local QR checkout retains the previously displayed US$3 local delivery for 1 bottle, free for 2+; Taiwan domestic one-bottle delivery needs LA_TW_SHIPPING_TWD.
+- Product price: **US$45 per bottle**.
+- **One bottle to Singapore, Malaysia, Vietnam, Indonesia or Hong Kong: fixed US$6 shipping**, total **US$51**.
+- **Two or more bottles: FREE shipping**, two-bottle total **US$90**.
+- These shipping amounts are the **buyer-facing charges**, independent of the actual carrier cost.
+- Taiwan Post international ePacket estimate (starting with a provisional 200g packed weight) and valid SF Express quotes are retained for **internal carrier-cost comparison only**. The customer still pays the fixed US$6 if buying one bottle.
+- Cambodia local QR checkout continues its previous US$3 local delivery for one bottle, free for two or more. Taiwan domestic one-bottle shipping still uses LA_TW_SHIPPING_TWD.
+- Hosted-card payment continues to convert the USD total into TWD using LA_TWD_PER_USD; customer-facing total remains in USD.
 
-Official Taiwan Post source: https://subservices.post.gov.tw/post/internet/Postal/index.jsp?ID=1521427719836
-Official SF quote page: https://htm.sf-express.com/TW/ZF/dynamic_function/price/
+Official postal tariff: https://subservices.post.gov.tw/post/internet/Postal/index.jsp?ID=1521427719836
 
 ## Owner-only payment setup
 1. LA project's Vercel > Settings > Environment Variables: add LA_NEWEBPAY_MERCHANT_ID, LA_NEWEBPAY_HASH_KEY (32-byte), LA_NEWEBPAY_HASH_IV (16-byte). **Never put tokens in chat or GitHub.**
