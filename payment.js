@@ -39,7 +39,8 @@
       $("total").textContent = quote.totalUsd === null ? usd(quote.subtotalUsd) + (quote.shippingTwd !== null ? " + NT$" + quote.shippingTwd + " shipping" : " + shipping") : usd(quote.totalUsd);
       amount.textContent = quote.amountTwd === null ? "TWD total shown after exchange-rate setup" : "NT$" + Number(quote.amountTwd).toLocaleString("en-US");
       $("shippingCarrier").textContent = quote.freeShipping ? "Free international delivery for 2+ bottles." :
-        quote.shippingCarrier + (quote.packedWeightGrams ? " · estimated packed weight " + quote.packedWeightGrams + "g. Final postage subject to carrier weighing." : "");
+        quote.country !== "KH" && quote.country !== "TW" ? "Flat US$6 shipping for one bottle. Shipped from Taiwan." :
+        quote.shippingCarrier;
       button.disabled = !quote.enabled;
       if (quote.shippingUsd === null && quote.shippingTwd === null) setMessage("Delivery to this country is not priced yet. Card payment is unavailable.");
       else if (!quote.enabled) setMessage("Secure credit card checkout is being connected. Please check again later.");
