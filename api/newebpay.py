@@ -16,7 +16,9 @@ from decimal import Decimal, InvalidOperation
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlencode, urlparse
 
-from api._lib import (
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _lib import (
     ORDERS_TABLE, airtable_create, airtable_list, airtable_update,
     find_or_create_customer, now_utc_iso,
 )
@@ -62,7 +64,7 @@ def quote(country: str, quantity: int) -> dict:
     configured = (
         os.environ.get("LA_CARD_ENABLED") == "true"
         and os.environ.get("LA_NEWEBPAY_APPROVED_STORE") == "true"
-        and bool(os.environ.get("LA_PUBLIC_URL"))
+        and os.environ.get("LA_PUBLIC_URL", "").startswith("https://")
         and bool(os.environ.get("LA_NEWEBPAY_MERCHANT_ID"))
         and len(os.environ.get("LA_NEWEBPAY_HASH_KEY", "").encode()) == 32
         and len(os.environ.get("LA_NEWEBPAY_HASH_IV", "").encode()) == 16
