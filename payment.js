@@ -35,11 +35,13 @@
       if (quote.country !== country.value || quote.quantity !== qty()) return;
       currentQuote = quote;
       $("subtotal").textContent = usd(quote.subtotalUsd);
-      $("shipping").textContent = quote.shippingUsd === null ? "To be confirmed" : Number(quote.shippingUsd) === 0 ? "FREE" : usd(quote.shippingUsd);
-      $("total").textContent = quote.totalUsd === null ? "To be confirmed" : usd(quote.totalUsd);
-      amount.textContent = quote.amountTwd === null ? "NT$ —" : "NT$" + Number(quote.amountTwd).toLocaleString("en-US");
+      $("shipping").textContent = quote.freeShipping ? "FREE" : quote.shippingUsd !== null ? usd(quote.shippingUsd) : quote.shippingTwd !== null ? "NT$" + Number(quote.shippingTwd).toLocaleString("en-US") : "To be confirmed";
+      $("total").textContent = quote.totalUsd === null ? usd(quote.subtotalUsd) + (quote.shippingTwd !== null ? " + NT$" + quote.shippingTwd + " shipping" : " + shipping") : usd(quote.totalUsd);
+      amount.textContent = quote.amountTwd === null ? "TWD total shown after exchange-rate setup" : "NT$" + Number(quote.amountTwd).toLocaleString("en-US");
+      $("shippingCarrier").textContent = quote.freeShipping ? "Free international delivery for 2+ bottles." :
+        quote.shippingCarrier + (quote.packedWeightGrams ? " · estimated packed weight " + quote.packedWeightGrams + "g. Final postage subject to carrier weighing." : "");
       button.disabled = !quote.enabled;
-      if (quote.shippingUsd === null) setMessage("Delivery to this country is not priced yet. Card payment is unavailable.");
+      if (quote.shippingUsd === null && quote.shippingTwd === null) setMessage("Delivery to this country is not priced yet. Card payment is unavailable.");
       else if (!quote.enabled) setMessage("Secure credit card checkout is being connected. Please check again later.");
       else setMessage("Visa / Mastercard · Secure NewebPay checkout. Your card is charged in TWD.");
     } catch {
