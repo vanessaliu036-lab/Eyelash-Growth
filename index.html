@@ -303,6 +303,7 @@ header nav .partner-header-link{white-space:nowrap}
 @media (max-width:900px){header .partner-mobile-link{display:inline-flex;position:absolute;right:16px;top:50%;transform:translateY(-50%);align-items:center;justify-content:center;min-height:34px;padding:7px 9px;border:1px solid var(--line);background:var(--paper);font-size:10px;letter-spacing:.02em;line-height:1.1;white-space:nowrap}}
 
 </style>
+  <link rel="stylesheet" href="ugc-reviews.css">
 </head>
 <body class="loading">
 <div class="loader"><div class="loader-inner"><div class="loader-logo">LA SHAUNNIE</div><div class="loader-line"></div><div class="loader-copy">Eyelash Growth Serum</div></div></div>
@@ -378,6 +379,40 @@ header nav .partner-header-link{white-space:nowrap}
     </video>
     <p class="testimonial-caption"><small>Real client story</small>Hear her experience, then see the results below.</p>
   </div>
+  <section id="la-ugc-showcase" class="la-ugc-showcase" aria-labelledby="la-ugc-heading">
+    <div class="la-ugc-head">
+      <span class="la-ugc-eyebrow">LA SHAUNNIE | CREATOR DIARIES</span>
+      <h2 id="la-ugc-heading" class="la-ugc-title">A closer look at the lash ritual</h2>
+      <p class="la-ugc-intro">Three short UGC-style videos showcasing the everyday lash-care ritual.</p>
+    </div>
+    <div class="la-ugc-grid" aria-label="Three brand creator videos">
+      <article class="la-ugc-card">
+        <div class="la-ugc-media" data-ugc-slot="1">
+          <img class="la-ugc-poster" src="img/life-portrait.jpg" alt="" loading="lazy">
+          <video data-src="img/ugc/la-shaunnie-ugc-01.mp4" controls playsinline preload="none" aria-label="LA SHAUNNIE creator demo: lash serum introduction" hidden></video>
+          <span class="la-ugc-placeholder" hidden>Video 01<br>Preview available after media upload</span>
+        </div>
+        <div class="la-ugc-info"><span class="la-ugc-tag">AI-Produced UGC Style</span><h3>Meet the lash serum</h3><p>Daily lash care, in a short creator-led introduction.</p></div>
+      </article>
+      <article class="la-ugc-card">
+        <div class="la-ugc-media" data-ugc-slot="2">
+          <img class="la-ugc-poster" src="img/life-lash.jpg" alt="" loading="lazy">
+          <video data-src="img/ugc/la-shaunnie-ugc-02.mp4" controls playsinline preload="none" aria-label="LA SHAUNNIE creator demo: lash close-ups and application" hidden></video>
+          <span class="la-ugc-placeholder" hidden>Video 02<br>Preview available after media upload</span>
+        </div>
+        <div class="la-ugc-info"><span class="la-ugc-tag">AI-Produced UGC Style</span><h3>Small steps, everyday</h3><p>A quick look at the beauty routine.</p></div>
+      </article>
+      <article class="la-ugc-card">
+        <div class="la-ugc-media" data-ugc-slot="3">
+          <img class="la-ugc-poster" src="img/product-handheld.jpg" alt="" loading="lazy">
+          <video data-src="img/ugc/la-shaunnie-ugc-03.mp4" controls playsinline preload="none" aria-label="LA SHAUNNIE creator demo: how to apply lash serum" hidden></video>
+          <span class="la-ugc-placeholder" hidden>Video 03<br>Preview available after media upload</span>
+        </div>
+        <div class="la-ugc-info"><span class="la-ugc-tag">AI-Produced UGC Style</span><h3>The one-minute ritual</h3><p>How a simple lash-care routine can fit into your day.</p></div>
+      </article>
+    </div>
+    <p class="la-ugc-note">The three creator videos are AI-produced branded content, separate from the real customer story shown above. Individual results may vary.</p>
+  </section>
   <div class="carousel results-carousel" data-carousel data-autoplay="5200" aria-label="Before and after results">
     <div class="car-viewport"><div class="car-track">
       <div class="car-slide"><figure class="rc"><img src="img/before%20after/user-1.jpg" alt="Client before and after, fuller longer lashes"><figcaption><small>Real client · 8 weeks</small><strong>Fuller, longer lashes</strong></figcaption></figure></div>
@@ -544,5 +579,6 @@ header nav .partner-header-link{white-space:nowrap}
   document.querySelectorAll('[data-carousel]').forEach(initCarousel);
 })();
 </script>
+  <script src="ugc-reviews.js" defer></script>
 </body>
 </html>

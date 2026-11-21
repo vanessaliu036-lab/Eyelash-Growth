@@ -1,0 +1,23 @@
+/* LA SHAUNNIE homepage: three-story UGC showcase, accessible mobile-first. */
+.la-ugc-showcase{max-width:1120px;margin:clamp(26px,4vw,52px) auto 20px;padding:0 18px}
+.la-ugc-head{text-align:center;margin:0 auto 24px;max-width:720px}
+.la-ugc-eyebrow{font:600 11px/1.4 inherit;letter-spacing:.19em;text-transform:uppercase;color:#8a7569}
+.la-ugc-title{margin:10px 0 8px;font-family:Georgia,serif;font-size:clamp(25px,3vw,38px);font-weight:400;color:#493a32;line-height:1.2}
+.la-ugc-intro{font-size:14px;line-height:1.65;color:#776b63;margin:0}
+.la-ugc-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:start}
+.la-ugc-card{border-radius:18px;overflow:hidden;border:1px solid #e4dcd2;background:#fffaf6;box-shadow:0 12px 30px rgba(70,45,27,.07);min-width:0}
+.la-ugc-media{position:relative;background:#dfd0c2;aspect-ratio:9/13;overflow:hidden}
+.la-ugc-media video{display:block;width:100%;height:100%;object-fit:cover;background:#221b17}
+.la-ugc-media video[hidden]{display:none!important}
+.la-ugc-media .la-ugc-poster{width:100%;height:100%;object-fit:cover;display:block}
+.la-ugc-media .la-ugc-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;text-align:center;padding:24px;background:linear-gradient(135deg,rgba(44,30,27,.30),rgba(30,18,24,.5));color:#fff;font-size:13px;line-height:1.5}
+.la-ugc-placeholder[hidden]{display:none}
+.la-ugc-pending .la-ugc-media video{display:none}
+.la-ugc-media:not(.la-ugc-pending) .la-ugc-poster{display:none}
+.la-ugc-info{padding:15px 17px 19px}
+.la-ugc-info .la-ugc-tag{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#977a65;font-weight:650}
+.la-ugc-info h3{font-size:17px;line-height:1.35;color:#4a3a31;margin:7px 0}
+.la-ugc-info p{font-size:12px;line-height:1.6;color:#776b63;margin:0}
+.la-ugc-note{text-align:center;color:#88786d;font-size:11px;line-height:1.6;max-width:720px;margin:17px auto 0}
+@media(max-width:720px){.la-ugc-showcase{padding:0 14px}.la-ugc-grid{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(224px,78vw);grid-template-columns:none;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-inline:contain;padding:0 5px 16px;gap:13px;scrollbar-width:thin}.la-ugc-card{scroll-snap-align:start}.la-ugc-media{aspect-ratio:9/14}.la-ugc-intro{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.la-ugc-grid{scroll-behavior:auto}}

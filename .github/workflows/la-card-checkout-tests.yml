@@ -1,0 +1,29 @@
+name: LA card checkout offline verification
+on:
+  push:
+    branches:
+      - feat/la-newebpay-card-checkout
+  pull_request:
+    paths:
+      - 'api/newebpay.py'
+      - 'payment.js'
+      - 'order.html'
+      - 'tests/test_newebpay.py'
+      - 'requirements.txt'
+      - '.github/workflows/la-card-checkout-tests.yml'
+permissions:
+  contents: read
+jobs:
+  checkout-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install payment test dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Run offline shipping and gateway tests
+        run: python -m unittest discover -s tests -p 'test_newebpay.py' -v
+      - name: Verify client JavaScript syntax
+        run: node --check payment.js
