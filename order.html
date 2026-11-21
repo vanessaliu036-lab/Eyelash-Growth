@@ -529,6 +529,7 @@
       .qty button,.qty strong{flex:1}
       .shipping-grid{grid-template-columns:1fr}
     }
+  #localPayment[hidden], #shippingNote[hidden]{display:none !important}
   </style>
 </head>
 
@@ -586,7 +587,7 @@
                 <label for="address">Delivery Address <span class="required">*</span></label>
                 <textarea id="address" placeholder="Enter your full shipping address" required></textarea>
                 <p class="field-error" id="err-address" hidden></p>
-                <p class="field-note">Delivery charges depend on the destination. International shipping appears when configured.</p>
+                <p class="field-note">International delivery is calculated automatically. Buy 2 or more bottles for free international shipping.</p>
               </div>
 
               <div>
@@ -608,7 +609,7 @@
 
               <div>
                 <p class="product-name">LA SHAUNNIE Lash Serum</p>
-                <div class="product-price">$40.00 per bottle</div>
+                <div class="product-price">$45.00 per bottle</div>
               </div>
 
               <div class="qty" aria-label="Quantity selector">
@@ -651,7 +652,7 @@
           <div class="summary">
             <div class="summary-row">
               <span>Product subtotal</span>
-              <strong id="subtotal">$40.00</strong>
+              <strong id="subtotal">$45.00</strong>
             </div>
             <div class="summary-row">
               <span>Delivery fee</span>
@@ -659,9 +660,10 @@
             </div>
           </div>
 
+          <p id="shippingCarrier" class="field-note" aria-live="polite" style="margin:10px 0 0;">Shipping updates automatically when you choose a destination.</p>
           <div class="total">
             <span>Total</span>
-            <strong id="total">$43.00</strong>
+            <strong id="total">$48.00</strong>
           </div>
 
           <section aria-label="Credit card payment" style="border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:20px;background:#fff;">
@@ -707,7 +709,7 @@
   </main>
 
   <script>
-    const UNIT_PRICE = 40;
+    const UNIT_PRICE = 45;
     const SHIPPING_FEE = 3;
     const TELEGRAM_URL = "https://t.me/cambodia_eyelash_bot";
 
