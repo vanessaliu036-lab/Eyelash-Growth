@@ -32,28 +32,28 @@ class QuoteTests(unittest.TestCase):
                 self.assertEqual(q["totalUsd"], "90.00", country)
                 self.assertEqual(q["shippingTwd"], 0, country)
 
-    def test_post_asia_rate_by_packed_weight(self):
+    def test_six_usd_flat_international_shipping(self):
         with patch.dict(os.environ, {"LA_PACKED_WEIGHT_GRAMS": "200", "LA_TWD_PER_USD": "30"}, clear=True):
             for country in ("VN", "SG", "MY", "ID", "HK"):
                 q = payment.quote(country, 1)
-                self.assertEqual(q["shippingTwd"], 120)
-                self.assertEqual(q["shippingUsd"], "4.00")
-                self.assertEqual(q["totalUsd"], "49.00")
-                self.assertEqual(q["amountTwd"], 1470)
-                self.assertIn("Chunghwa Post", q["shippingCarrier"])
+                self.assertEqual(q["unitPriceUsd"], "45.00")
+                self.assertEqual(q["shippingUsd"], "6.00")
+                self.assertEqual(q["totalUsd"], "51.00")
+                self.assertEqual(q["amountTwd"], 1530)
+                self.assertEqual(q["shippingTwd"], None)
                 self.assertFalse(q["enabled"])
         with patch.dict(os.environ, {"LA_PACKED_WEIGHT_GRAMS": "350", "LA_TWD_PER_USD": "30"}, clear=True):
-            self.assertEqual(payment.quote("MY", 1)["shippingTwd"], 160)
+            self.assertEqual(payment.quote("MY", 1)["shippingUsd"], "6.00")
 
-    def test_post_price_is_visible_without_exchange_rate(self):
+    def test_six_usd_visible_without_exchange_rate(self):
         with patch.dict(os.environ, {}, clear=True):
             q = payment.quote("SG", 1)
         self.assertEqual(q["subtotalUsd"], "45.00")
-        self.assertEqual(q["shippingTwd"], 120)
-        self.assertIsNone(q["totalUsd"])
+        self.assertEqual(q["shippingUsd"], "6.00")
+        self.assertEqual(q["totalUsd"], "51.00")
         self.assertIsNone(q["amountTwd"])
 
-    def test_sf_only_if_verified_and_cheaper(self):
+    def test_carrier_cost_comparison_does_not_change_customer_price(self):
         env = {
             "LA_PACKED_WEIGHT_GRAMS": "200",
             "LA_TWD_PER_USD": "30",
@@ -61,12 +61,15 @@ class QuoteTests(unittest.TestCase):
             "LA_SF_QUOTE_VALID_THROUGH": "2099-01-01",
         }
         with patch.dict(os.environ, env, clear=True):
+            fee, carrier, weight = payment.shipping_twd_for_one("VN")
             q = payment.quote("VN", 1)
-        self.assertEqual(q["shippingTwd"], 80)
-        self.assertIn("SF Express", q["shippingCarrier"])
+        self.assertEqual(fee, 80)
+        self.assertIn("SF Express", carrier)
+        self.assertEqual(q["shippingUsd"], "6.00")
+        self.assertEqual(q["totalUsd"], "51.00")
         env["LA_SF_QUOTE_VALID_THROUGH"] = "2020-01-01"
         with patch.dict(os.environ, env, clear=True):
-            self.assertEqual(payment.quote("VN", 1)["shippingTwd"], 120)
+            self.assertEqual(payment.shipping_twd_for_one("VN")[0], 120)
 
     def test_invalid_quantity_and_weight(self):
         for n in (0, 11, -1):
