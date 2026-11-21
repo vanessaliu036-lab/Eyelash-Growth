@@ -8,6 +8,7 @@
 .la-ugc-card{border-radius:18px;overflow:hidden;border:1px solid #e4dcd2;background:#fffaf6;box-shadow:0 12px 30px rgba(70,45,27,.07);min-width:0}
 .la-ugc-media{position:relative;background:#dfd0c2;aspect-ratio:9/13;overflow:hidden}
 .la-ugc-media video{display:block;width:100%;height:100%;object-fit:cover;background:#221b17}
+.la-ugc-media video[hidden]{display:none!important}
 .la-ugc-media .la-ugc-poster{width:100%;height:100%;object-fit:cover;display:block}
 .la-ugc-media .la-ugc-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;text-align:center;padding:24px;background:linear-gradient(135deg,rgba(44,30,27,.30),rgba(30,18,24,.5));color:#fff;font-size:13px;line-height:1.5}
 .la-ugc-placeholder[hidden]{display:none}
