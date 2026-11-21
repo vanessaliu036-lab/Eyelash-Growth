@@ -101,7 +101,13 @@ def quote(country: str, quantity: int) -> dict:
         # Keep the existing local Cambodia QR delivery price unchanged.
         shipping_usd = Decimal("3")
         carrier = "Cambodia local delivery"
-    elif country in POSTAL_ASIA or country == "TW":
+    elif country in POSTAL_ASIA:
+        # Customers pay a fixed international fee. The carrier estimate is
+        # internal fulfillment guidance, never the customer checkout price.
+        _estimated_cost_twd, suggested_carrier, weight_grams = shipping_twd_for_one(country)
+        shipping_usd = Decimal("6.00")
+        carrier = "Standard international delivery · flat US$6"
+    elif country == "TW":
         shipping_twd, carrier, weight_grams = shipping_twd_for_one(country)
         shipping_usd = Decimal(shipping_twd) / rate if shipping_twd is not None and rate else None
     else:
