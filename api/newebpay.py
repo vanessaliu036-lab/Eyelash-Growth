@@ -23,9 +23,15 @@ from _lib import (
     find_or_create_customer, now_utc_iso,
 )
 
-UNIT_CENTS = 4000  # Preserve the currently published US$40 LA order-page price.
+UNIT_CENTS = 4500  # LA SHAUNNIE US$45 per bottle, shipping separately.
 COUNTRIES = {"KH": "Cambodia", "VN": "Vietnam", "SG": "Singapore",
              "MY": "Malaysia", "ID": "Indonesia", "TW": "Taiwan", "HK": "Hong Kong"}
+POSTAL_ASIA = {"VN", "SG", "MY", "ID", "HK"}
+# Taiwan Post ePacket, Asia: NT$100 for first 100g + NT$20 per next 100g.
+# Source: https://subservices.post.gov.tw/post/internet/Postal/index.jsp?ID=1521427719836
+# As published 2026-04-01. This is a tariff estimate, not a live carrier API.
+POST_BASE_TWD = 100
+POST_PER_100G_TWD = 20
 ORDER_RE = re.compile(r"^LA[0-9A-F]{22}$")
 GATEWAY_URLS = {
     "test": "https://ccore.newebpay.com/MPG/mpg_gateway",
@@ -33,26 +39,49 @@ GATEWAY_URLS = {
 }
 
 
-def usd_cents(value: str) -> int:
+def nonnegative_twd(text: str) -> int | None:
+    if not text or not re.fullmatch(r"\d{1,6}", text):
+        return None
+    return int(text)
+
+
+def packed_weight_grams() -> int:
+    # Provisional one-bottle packed weight. Verify actual weight before enabling.
+    raw = os.environ.get("LA_PACKED_WEIGHT_GRAMS", "200")
     try:
-        cents = Decimal(value) * 100
-        if not cents.is_finite() or cents != cents.to_integral_value() or cents < 0:
-            raise ValueError("Invalid shipping fee")
-        return int(cents)
-    except (InvalidOperation, TypeError):
-        raise ValueError("Invalid shipping fee")
+        weight = int(raw)
+    except (TypeError, ValueError):
+        raise ValueError("Invalid packed weight")
+    if weight < 1 or weight > 2000:
+        raise ValueError("Packed weight must be 1–2000g")
+    return weight
+
+
+def shipping_twd_for_one(country: str) -> tuple[int | None, str, int | None]:
+    if country == "TW":
+        fee = nonnegative_twd(os.environ.get("LA_TW_SHIPPING_TWD", ""))
+        return fee, "Taiwan domestic shipping" if fee is not None else "Unconfigured", None
+    weight = packed_weight_grams()
+    post_fee = POST_BASE_TWD + POST_PER_100G_TWD * max(0, (weight - 1) // 100)
+    selected = post_fee
+    carrier = "Chunghwa Post ePacket (published tariff estimate)"
+    # SF is compared only when the owner supplies a verified quote for the
+    # exact parcel and a non-expired valid-through date. Never guess SF pricing.
+    sf_raw = os.environ.get("LA_SF_QUOTE_TWD_" + country, "")
+    sf_fee = nonnegative_twd(sf_raw)
+    valid = os.environ.get("LA_SF_QUOTE_VALID_THROUGH", "")
+    if sf_fee is not None and re.fullmatch(r"\d{4}-\d{2}-\d{2}", valid):
+        try:
+            if datetime.fromisoformat(valid).date() >= datetime.now(timezone.utc).date() and sf_fee < selected:
+                selected, carrier = sf_fee, "SF Express (verified quote)"
+        except ValueError:
+            pass
+    return selected, carrier, weight
 
 
 def quote(country: str, quantity: int) -> dict:
     if country not in COUNTRIES or not isinstance(quantity, int) or not 1 <= quantity <= 10:
         raise ValueError("Invalid destination or quantity")
-    shipping_cents = (0 if quantity >= 2 else 300) if country == "KH" else None
-    if country != "KH":
-        shipping_env = os.environ.get("LA_SHIPPING_USD_" + country, "").strip()
-        if shipping_env:
-            shipping_cents = usd_cents(shipping_env)
-    subtotal_cents = UNIT_CENTS * quantity
-    total_cents = subtotal_cents + shipping_cents if shipping_cents is not None else None
     rate_text = os.environ.get("LA_TWD_PER_USD", "").strip()
     try:
         rate = Decimal(rate_text)
@@ -60,7 +89,36 @@ def quote(country: str, quantity: int) -> dict:
             rate = None
     except (InvalidOperation, TypeError):
         rate = None
-    twd = int((Decimal(total_cents) * rate / 100).quantize(Decimal("1"))) if total_cents is not None and rate else None
+    subtotal_usd = Decimal(UNIT_CENTS * quantity) / 100
+    weight_grams = None
+    shipping_twd = None
+    if quantity >= 2:
+        # Worldwide two-bottle free shipping for currently offered countries.
+        shipping_usd = Decimal("0")
+        shipping_twd = 0
+        carrier = "Free shipping (2+ bottles)"
+    elif country == "KH":
+        # Keep the existing local Cambodia QR delivery price unchanged.
+        shipping_usd = Decimal("3")
+        carrier = "Cambodia local delivery"
+    elif country in POSTAL_ASIA or country == "TW":
+        shipping_twd, carrier, weight_grams = shipping_twd_for_one(country)
+        shipping_usd = Decimal(shipping_twd) / rate if shipping_twd is not None and rate else None
+    else:
+        shipping_usd = None
+        carrier = "Shipping unavailable"
+
+    total_usd = subtotal_usd + shipping_usd if shipping_usd is not None else None
+    # NewebPay charges TWD; preserve the full carrier TWD fee instead of
+    # rounding it via USD twice.
+    subtotal_twd = int((subtotal_usd * rate).quantize(Decimal("1"))) if rate else None
+    if rate and subtotal_twd is not None:
+        amount_twd = subtotal_twd + (shipping_twd if shipping_twd is not None else
+                                    int((shipping_usd * rate).quantize(Decimal("1"))) if shipping_usd is not None else 0)
+        if shipping_usd is None:
+            amount_twd = None
+    else:
+        amount_twd = None
     configured = (
         os.environ.get("LA_CARD_ENABLED") == "true"
         and os.environ.get("LA_NEWEBPAY_APPROVED_STORE") == "true"
@@ -72,12 +130,17 @@ def quote(country: str, quantity: int) -> dict:
     )
     return {
         "country": country, "quantity": quantity,
-        "subtotalUsd": f"{subtotal_cents / 100:.2f}",
-        "shippingUsd": None if shipping_cents is None else f"{shipping_cents / 100:.2f}",
-        "totalUsd": None if total_cents is None else f"{total_cents / 100:.2f}",
-        "amountTwd": twd, "currency": "TWD",
+        "unitPriceUsd": "45.00",
+        "subtotalUsd": f"{subtotal_usd:.2f}",
+        "shippingUsd": None if shipping_usd is None else f"{shipping_usd:.2f}",
+        "shippingTwd": shipping_twd,
+        "shippingCarrier": carrier,
+        "packedWeightGrams": weight_grams,
+        "freeShipping": quantity >= 2,
+        "totalUsd": None if total_usd is None else f"{total_usd:.2f}",
+        "amountTwd": amount_twd, "currency": "TWD",
         "rate": str(rate) if rate else None,
-        "enabled": bool(configured and twd and twd > 0),
+        "enabled": bool(configured and amount_twd and amount_twd > 0),
     }
 
 
