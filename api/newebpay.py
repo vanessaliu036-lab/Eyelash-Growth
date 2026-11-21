@@ -44,7 +44,7 @@ def usd_cents(value: str) -> int:
 def quote(country: str, quantity: int) -> dict:
     if country not in COUNTRIES or not isinstance(quantity, int) or not 1 <= quantity <= 10:
         raise ValueError("Invalid destination or quantity")
-    shipping_cents = 0 if quantity >= 2 else 300 if country == "KH" else None
+    shipping_cents = (0 if quantity >= 2 else 300) if country == "KH" else None
     if country != "KH":
         shipping_env = os.environ.get("LA_SHIPPING_USD_" + country, "").strip()
         if shipping_env:
@@ -114,10 +114,14 @@ def decode_reply(form: dict, merchant: str, key: bytes, iv: bytes) -> dict:
         raise ValueError("Merchant mismatch")
     decryptor = Cipher(algorithms.AES(key), modes.CBC(iv)).decryptor()
     padded = decryptor.update(bytes.fromhex(hexd)) + decryptor.finalize()
+    # NewebPay has historically returned correctly signed replies with nonstandard
+    # trailing padding. Match ARUNERA's tested gateway handling after SHA validation.
     pad = padded[-1]
-    if pad < 1 or pad > 16 or padded[-pad:] != bytes([pad]) * pad:
-        raise ValueError("Invalid payment padding")
-    reply = json.loads(padded[:-pad].decode("utf-8"))
+    if 1 <= pad <= 16 and padded[-pad:] == bytes([pad]) * pad:
+        plaintext = padded[:-pad]
+    else:
+        plaintext = padded.rstrip(bytes(range(33)))
+    reply = json.loads(plaintext.decode("utf-8"))
     result = reply.get("Result")
     if not isinstance(result, dict) or result.get("MerchantID") != merchant:
         raise ValueError("Payment merchant mismatch")
