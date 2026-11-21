@@ -37,7 +37,7 @@
       letter-spacing:.005em;
     }
 
-    button,input,textarea{font:inherit}
+    button,input,textarea,select{font:inherit}
 
     h1,h2,h3,.brand,.loader-logo,.product-name{
       font-family:"Italiana", Georgia, "Times New Roman", serif;
@@ -162,7 +162,7 @@
       transition:.18s ease;
     }
 
-    input:focus,textarea:focus{
+    input:focus,textarea:focus,select:focus{
       border-color:var(--accent);
       box-shadow:0 0 0 4px rgba(155,123,94,.12);
     }
@@ -549,7 +549,7 @@
           <p class="eyebrow">Simple Checkout</p>
           <h1>Complete Your Order</h1>
           <p class="intro">
-            Enter your delivery details, choose your quantity, then complete payment using the QR code.
+            Enter your delivery details and choose secure card checkout or available local bank transfer.
           </p>
 
           <form id="orderForm" novalidate>
@@ -567,15 +567,31 @@
               </div>
 
               <div>
+                <label for="email">Email Address <span class="required">*</span></label>
+                <input id="email" type="email" placeholder="you@example.com" autocomplete="email">
+              </div>
+              <div>
+                <label for="country">Delivery Country <span class="required">*</span></label>
+                <select id="country" autocomplete="country" aria-label="Delivery country">
+                  <option value="KH">Cambodia</option>
+                  <option value="VN">Vietnam</option>
+                  <option value="SG">Singapore</option>
+                  <option value="MY">Malaysia</option>
+                  <option value="ID">Indonesia</option>
+                  <option value="TW">Taiwan</option>
+                  <option value="HK">Hong Kong</option>
+                </select>
+              </div>
+              <div>
                 <label for="address">Delivery Address <span class="required">*</span></label>
-                <textarea id="address" placeholder="Enter your address in Phnom Penh" required></textarea>
+                <textarea id="address" placeholder="Enter your full shipping address" required></textarea>
                 <p class="field-error" id="err-address" hidden></p>
-                <p class="field-note">Delivery is available within Phnom Penh only.</p>
+                <p class="field-note">Delivery charges depend on the destination. International shipping appears when configured.</p>
               </div>
 
               <div>
-                <label for="account4">Bank Account — Last 4 Digits <span class="required">*</span></label>
-                <input id="account4" type="text" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="e.g. 1234" required>
+                <label for="account4">Bank Account — Last 4 Digits (local transfer only)</label>
+                <input id="account4" type="text" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="For bank transfers only">
                 <p class="field-error" id="err-account4" hidden></p>
                 <p class="field-note">Used to verify your transfer. Please enter the last 4 digits of the bank account you paid from.</p>
               </div>
@@ -602,7 +618,7 @@
               </div>
             </div>
 
-            <div class="shipping-note">
+            <div class="shipping-note" id="shippingNote">
               <div class="shipping-title">
                 <span>🚚</span>
                 <span>Phnom Penh Delivery</span>
@@ -648,6 +664,15 @@
             <strong id="total">$43.00</strong>
           </div>
 
+          <section aria-label="Credit card payment" style="border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:20px;background:#fff;">
+            <p style="font-weight:600;margin:0 0 8px;">Visa / Mastercard</p>
+            <p class="field-note" style="margin:0 0 10px;">Your card details are entered only on NewebPay's secure payment page.</p>
+            <p id="cardAmount" style="font-size:20px;font-weight:600;margin:0 0 10px;">NT$ —</p>
+            <button class="tg-btn" id="cardPayButton" type="button" disabled style="margin:0;">Pay securely by credit card</button>
+            <p class="field-note" id="cardMessage" role="status" aria-live="polite" style="margin:10px 0 0;">Secure card checkout is being connected.</p>
+            <p id="cardResult" role="status" aria-live="polite" hidden style="font-weight:600;line-height:1.5;"></p>
+          </section>
+          <div id="localPayment" style="margin-top:16px">
           <div class="qr-wrap">
             <div class="qr">
               <img src="img/qr-payment.png" alt="Payment QR Code"
@@ -675,6 +700,7 @@
           <p class="fine-print">
             Telegram: @cambodia_eyelash_bot
           </p>
+          </div>
         </aside>
       </section>
     </div>
@@ -771,5 +797,6 @@
 
     updateOrder();
   </script>
+  <script src="payment.js" defer></script>
 </body>
 </html>
