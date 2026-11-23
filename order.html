@@ -37,7 +37,7 @@
       letter-spacing:.005em;
     }
 
-    button,input,textarea{font:inherit}
+    button,input,textarea,select{font:inherit}
 
     h1,h2,h3,.brand,.loader-logo,.product-name{
       font-family:"Italiana", Georgia, "Times New Roman", serif;
@@ -151,7 +151,7 @@
       font-weight:700;
     }
 
-    input,textarea{
+    input,textarea,select{
       width:100%;
       border:1px solid var(--line);
       border-radius:13px;
@@ -162,9 +162,19 @@
       transition:.18s ease;
     }
 
-    input:focus,textarea:focus{
+    input:focus,textarea:focus,select:focus{
       border-color:var(--accent);
       box-shadow:0 0 0 4px rgba(155,123,94,.12);
+    }
+
+    select{
+      appearance:none;
+      -webkit-appearance:none;
+      cursor:pointer;
+      padding-right:40px;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%237b746d' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;
+      background-position:right 16px center;
     }
 
     textarea{
@@ -494,6 +504,46 @@
 
     .back-link:hover{color:var(--ink)}
 
+    .twd-box{
+      margin:0 0 16px;
+      padding:14px 16px;
+      border:1px solid var(--line-2);
+      border-radius:16px;
+      background:linear-gradient(135deg,#f6eee7,#fbf8f4);
+      font-size:13px;
+      line-height:1.55;
+      color:#5b4b3f;
+    }
+    .twd-box .twd-amount{
+      display:block;
+      margin:2px 0;
+      font-family:"Italiana", Georgia, serif;
+      font-size:28px;
+      color:var(--ink);
+    }
+    .twd-box small{display:block;color:var(--muted);font-size:11px}
+    .card-info{
+      margin:16px 0;
+      padding:14px 15px;
+      border-radius:14px;
+      background:var(--soft-2);
+      border:1px solid var(--line-2);
+      color:#5b4b3f;
+      font-size:12.5px;
+      line-height:1.6;
+    }
+    .tg-btn[disabled]{opacity:.55;cursor:not-allowed}
+    .banner{
+      margin:0 0 22px;
+      padding:14px 16px;
+      border-radius:14px;
+      font-size:14px;
+      font-weight:600;
+      line-height:1.5;
+    }
+    .banner.ok{background:#f1f8f1;border:1px solid #cfe5cf;color:#2f6b2f}
+    .banner.fail{background:#fff1f0;border:1px solid #ffd3cf;color:var(--danger)}
+
     @media(max-width:820px){
       .layout{grid-template-columns:1fr}
       .payment-card{position:static}
@@ -548,8 +598,9 @@
           <a href="index.html" class="back-link">← Back to story</a>
           <p class="eyebrow">Simple Checkout</p>
           <h1>Complete Your Order</h1>
-          <p class="intro">
-            Enter your delivery details, choose your quantity, then complete payment using the QR code.
+          <div class="banner" id="banner" hidden></div>
+          <p class="intro" id="introText">
+            Enter your delivery details, choose your quantity, then complete your payment.
           </p>
 
           <form id="orderForm" novalidate>
@@ -567,13 +618,38 @@
               </div>
 
               <div>
-                <label for="address">Delivery Address <span class="required">*</span></label>
-                <textarea id="address" placeholder="Enter your address in Phnom Penh" required></textarea>
-                <p class="field-error" id="err-address" hidden></p>
-                <p class="field-note">Delivery is available within Phnom Penh only.</p>
+                <label for="country">Country <span class="required">*</span></label>
+                <select id="country">
+                  <option value="KH" selected>Cambodia</option>
+                  <option value="MY">Malaysia</option>
+                  <option value="SG">Singapore</option>
+                  <option value="VN">Vietnam</option>
+                  <option value="ID">Indonesia</option>
+                  <option value="OTHER">Other country</option>
+                </select>
+              </div>
+
+              <div id="otherCountryWrap" hidden>
+                <label for="otherCountry">Your Country <span class="required">*</span></label>
+                <input id="otherCountry" type="text" placeholder="Enter your country" autocomplete="country-name">
+                <p class="field-error" id="err-otherCountry" hidden></p>
+                <p class="field-note">Delivery is by Taiwan Post. Whether we can deliver to your country is subject to Taiwan Post.</p>
               </div>
 
               <div>
+                <label for="address">Delivery Address <span class="required">*</span></label>
+                <textarea id="address" placeholder="Enter your delivery address" required></textarea>
+                <p class="field-error" id="err-address" hidden></p>
+                <p class="field-note" id="addressNote">Please include street, area and city.</p>
+              </div>
+
+              <div id="postalWrap" hidden>
+                <label for="postal">Postal Code <span class="required">*</span></label>
+                <input id="postal" type="text" placeholder="Enter your postal code" autocomplete="postal-code">
+                <p class="field-error" id="err-postal" hidden></p>
+              </div>
+
+              <div id="account4Wrap">
                 <label for="account4">Bank Account — Last 4 Digits <span class="required">*</span></label>
                 <input id="account4" type="text" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="e.g. 1234" required>
                 <p class="field-error" id="err-account4" hidden></p>
@@ -605,26 +681,9 @@
             <div class="shipping-note">
               <div class="shipping-title">
                 <span>🚚</span>
-                <span>Phnom Penh Delivery</span>
+                <span id="shipTitle">Delivery</span>
               </div>
-
-              <div class="shipping-grid">
-                <div class="shipping-item">
-                  <span class="shipping-icon">📦</span>
-                  <div>
-                    <strong>1 Bottle</strong>
-                    $3 delivery fee
-                  </div>
-                </div>
-
-                <div class="shipping-item free">
-                  <span class="shipping-icon">🎀</span>
-                  <div>
-                    <strong>2+ Bottles · FREE Shipping</strong>
-                    No delivery fee
-                  </div>
-                </div>
-              </div>
+              <div class="shipping-grid" id="shipGrid"></div>
             </div>
           </form>
         </div>
@@ -648,32 +707,50 @@
             <strong id="total">$43.00</strong>
           </div>
 
+          <div id="panelAba">
           <div class="qr-wrap">
-            <div class="qr">
-              <img src="img/qr-payment.png" alt="Payment QR Code"
-                   onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
-              <div class="qr-fallback" style="display:none">
-                Add your payment QR code here.<br>
-                File name: <b>qr-payment.png</b>
+              <div class="qr">
+                <img src="img/qr-payment.png" alt="Payment QR Code"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+                <div class="qr-fallback" style="display:none">
+                  Add your payment QR code here.<br>
+                  File name: <b>qr-payment.png</b>
+                </div>
               </div>
+              <p class="qr-title">Scan to Pay</p>
+              <p class="qr-sub">Use your banking app to complete payment.</p>
             </div>
-            <p class="qr-title">Scan to Pay</p>
-            <p class="qr-sub">Use your banking app to complete payment.</p>
+  
+            <div class="warning">
+              <strong>⚠️ IMPORTANT</strong>
+              Orders will NOT be processed or shipped until payment has been verified.
+            </div>
+  
+            <button class="tg-btn" id="telegramButton" type="button">
+              I've Paid · Contact Customer Service
+            </button>
+  
           </div>
 
-          <div class="warning">
-            <strong>⚠️ IMPORTANT</strong>
-            Orders will NOT be processed or shipped until payment has been verified.
-          </div>
+          <div id="panelCard" hidden>
+            <div class="twd-box" id="twdBox">
+              Card payment is charged in New Taiwan Dollars (NT$)
+              <span class="twd-amount" id="twdAmount">—</span>
+              <small id="twdRate">Loading exchange rate…</small>
+            </div>
 
-          <button class="tg-btn" id="telegramButton" type="button">
-            I've Paid · Contact Customer Service
-          </button>
+            <div class="card-info">
+              🔒 You will be taken to NewebPay's secure payment page to enter your card details.
+              We never see or store your card number.
+            </div>
+
+            <button class="tg-btn" id="cardButton" type="button">Pay by Credit Card</button>
+          </div>
 
           <p class="status" id="status"></p>
 
           <p class="fine-print">
-            Telegram: @cambodia_eyelash_bot
+            <span id="finePrint">Telegram: @cambodia_eyelash_bot</span>
           </p>
         </aside>
       </section>
@@ -682,94 +759,269 @@
 
   <script>
     const UNIT_PRICE = 40;
-    const SHIPPING_FEE = 3;
     const TELEGRAM_URL = "https://t.me/cambodia_eyelash_bot";
 
+    // method: "aba" = QR + Telegram, "card" = NewebPay credit card.
+    // Shipping is charged once per order. freeFrom = bottles needed for free shipping.
+    const COUNTRIES = {
+      KH:    { name: "Cambodia",      method: "aba",  fee: 6,  freeFrom: 2 },
+      MY:    { name: "Malaysia",      method: "card", fee: 6,  freeFrom: 2 },
+      SG:    { name: "Singapore",     method: "card", fee: 6,  freeFrom: 2 },
+      VN:    { name: "Vietnam",       method: "card", fee: 6,  freeFrom: 2 },
+      ID:    { name: "Indonesia",     method: "card", fee: 6,  freeFrom: 2 },
+      OTHER: { name: "Other country", method: "card", fee: 10, freeFrom: null }
+    };
+
     let quantity = 1;
+    let quote = null;          // { rate, ts, sig } from /api/rate
+    let quoteError = false;
+    let quoteLoading = false;
+    let paying = false;
 
-    const qtyEl = document.getElementById("qty");
-    const subtotalEl = document.getElementById("subtotal");
-    const shippingEl = document.getElementById("shipping");
-    const totalEl = document.getElementById("total");
-    const statusEl = document.getElementById("status");
+    const $ = (id) => document.getElementById(id);
+    const qtyEl = $("qty");
+    const subtotalEl = $("subtotal");
+    const shippingEl = $("shipping");
+    const totalEl = $("total");
+    const statusEl = $("status");
+    const countryEl = $("country");
 
-    function money(value){
-      return `$${value.toFixed(2)}`;
+    function money(value){ return `$${value.toFixed(2)}`; }
+    function cfg(){ return COUNTRIES[countryEl.value]; }
+    function shippingFee(){
+      const c = cfg();
+      return (c.freeFrom !== null && quantity >= c.freeFrom) ? 0 : c.fee;
+    }
+    function totalUsd(){ return UNIT_PRICE * quantity + shippingFee(); }
+    function twdAmount(){ return quote ? Math.ceil(totalUsd() * quote.rate) : null; }
+
+    function renderShippingNote(){
+      const c = cfg();
+      const grid = $("shipGrid");
+      $("shipTitle").textContent = countryEl.value === "OTHER" ? "International Delivery (Taiwan Post)"
+        : (countryEl.value === "KH" ? "Cambodia Delivery" : `${c.name} Delivery (Taiwan Post)`);
+      if (c.freeFrom === null) {
+        grid.style.gridTemplateColumns = "1fr";
+        grid.innerHTML = `
+          <div class="shipping-item"><span class="shipping-icon">📦</span>
+            <div><strong>$${c.fee} flat delivery fee</strong>Charged once per order, any quantity</div></div>`;
+      } else {
+        grid.style.gridTemplateColumns = "";
+        grid.innerHTML = `
+          <div class="shipping-item"><span class="shipping-icon">📦</span>
+            <div><strong>1 Bottle</strong>$${c.fee} delivery fee (once per order)</div></div>
+          <div class="shipping-item free"><span class="shipping-icon">🎀</span>
+            <div><strong>${c.freeFrom}+ Bottles · FREE Shipping</strong>No delivery fee</div></div>`;
+      }
+    }
+
+    function renderCountry(){
+      const code = countryEl.value;
+      const isCard = cfg().method === "card";
+      $("otherCountryWrap").hidden = code !== "OTHER";
+      $("postalWrap").hidden = code === "KH";
+      $("account4Wrap").hidden = isCard;
+      $("panelAba").hidden = isCard;
+      $("panelCard").hidden = !isCard;
+      $("finePrint").hidden = isCard;
+      $("addressNote").textContent = code === "KH"
+        ? "Please include street, area and city in Cambodia."
+        : "Please include street, area, city and state/province.";
+      $("address").placeholder = code === "KH" ? "Enter your address in Cambodia" : "Enter your delivery address";
+      statusEl.textContent = "";
+      renderShippingNote();
+      if (isCard && !quote && !quoteLoading) loadQuote();
+      updateOrder();
     }
 
     function updateOrder(){
       const subtotal = UNIT_PRICE * quantity;
-      const shipping = quantity >= 2 ? 0 : SHIPPING_FEE;
-      const total = subtotal + shipping;
-
+      const shipping = shippingFee();
       qtyEl.textContent = quantity;
       subtotalEl.textContent = money(subtotal);
       shippingEl.textContent = shipping === 0 ? "FREE" : money(shipping);
-      totalEl.textContent = money(total);
+      totalEl.textContent = money(subtotal + shipping);
+      renderCard();
     }
 
-    document.getElementById("minus").addEventListener("click", () => {
-      quantity = Math.max(1, quantity - 1);
-      updateOrder();
-    });
+    function renderCard(){
+      if (cfg().method !== "card") return;
+      const btn = $("cardButton");
+      const amountEl = $("twdAmount");
+      const rateEl = $("twdRate");
+      if (quote) {
+        const twd = twdAmount();
+        amountEl.textContent = `NT$ ${twd.toLocaleString("en-US")}`;
+        rateEl.textContent = `≈ US$ ${totalUsd().toFixed(2)} · live rate 1 USD = ${quote.rate.toFixed(2)} TWD. Your bank converts NT$ to your local currency.`;
+        btn.textContent = `Pay NT$ ${twd.toLocaleString("en-US")} by Credit Card`;
+        btn.disabled = paying;
+      } else if (quoteLoading) {
+        amountEl.textContent = "…";
+        rateEl.textContent = "Loading live exchange rate…";
+        btn.textContent = "Loading exchange rate…";
+        btn.disabled = true;
+      } else {
+        amountEl.textContent = "—";
+        rateEl.textContent = "Exchange rate is temporarily unavailable.";
+        btn.textContent = "Retry exchange rate";
+        btn.disabled = false;
+      }
+    }
 
-    document.getElementById("plus").addEventListener("click", () => {
-      quantity += 1;
-      updateOrder();
-    });
+    async function loadQuote(){
+      quoteLoading = true; quoteError = false; renderCard();
+      try {
+        const r = await fetch("/api/rate", { cache: "no-store" });
+        if (!r.ok) throw new Error("rate");
+        const q = await r.json();
+        if (!q || !q.rate || !q.sig) throw new Error("rate");
+        quote = q;
+      } catch (e) {
+        quote = null; quoteError = true;
+      }
+      quoteLoading = false;
+      renderCard();
+    }
 
-    document.getElementById("telegramButton").addEventListener("click", () => {
-      const fields = [
-        { id: "name", errId: "err-name", label: "Full Name", test: (v) => v.length > 0, msg: "Please enter your full name." },
-        { id: "phone", errId: "err-phone", label: "Phone Number", test: (v) => v.length > 0, msg: "Please enter your phone number." },
-        { id: "address", errId: "err-address", label: "Delivery Address", test: (v) => v.length > 0, msg: "Please enter your delivery address." },
-        { id: "account4", errId: "err-account4", label: "Bank Last 4", test: (v) => /^\d{4}$/.test(v), msg: "Please enter the last 4 digits of your bank account (exactly 4 numbers)." },
-      ];
+    function quoteIsStale(){
+      return !quote || (Date.now() / 1000 - quote.ts) > 10 * 60;
+    }
+
+    function validate(list){
+      let first = null, firstMsg = "";
       const values = {};
-      let firstInvalid = null;
-      let firstErrorMsg = "";
-      for (const f of fields) {
-        const el = document.getElementById(f.id);
-        const errEl = document.getElementById(f.errId);
+      for (const f of list) {
+        const el = $(f.id);
+        const errEl = $(f.errId);
         const v = (el.value || "").trim();
         values[f.id] = v;
-        const ok = f.test(v);
-        if (!ok) {
+        if (!f.test(v)) {
           el.classList.add("field-invalid");
           errEl.textContent = f.msg;
           errEl.hidden = false;
-          if (!firstInvalid) { firstInvalid = el; firstErrorMsg = f.msg; }
+          if (!first) { first = el; firstMsg = f.msg; }
         } else {
           el.classList.remove("field-invalid");
           errEl.textContent = "";
           errEl.hidden = true;
         }
       }
-      if (firstInvalid) {
-        statusEl.textContent = firstErrorMsg;
-        firstInvalid.focus();
-        firstInvalid.scrollIntoView({ behavior: "smooth", block: "center" });
-        return;
-      }
+      return { values, first, firstMsg };
+    }
 
-      const name = values.name;
-      const phone = values.phone;
-      const address = values.address;
-      const account4 = values.account4;
+    const BASE_FIELDS = [
+      { id: "name", errId: "err-name", test: (v) => v.length > 0, msg: "Please enter your full name." },
+      { id: "phone", errId: "err-phone", test: (v) => v.length > 0, msg: "Please enter your phone number." },
+      { id: "address", errId: "err-address", test: (v) => v.length > 0, msg: "Please enter your delivery address." }
+    ];
 
+    function failValidation(res){
+      statusEl.textContent = res.firstMsg;
+      res.first.focus();
+      res.first.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    $("minus").addEventListener("click", () => { quantity = Math.max(1, quantity - 1); updateOrder(); });
+    $("plus").addEventListener("click", () => { quantity += 1; updateOrder(); });
+    countryEl.addEventListener("change", renderCountry);
+
+    // --- Cambodia: ABA QR + Telegram (unchanged flow) ---
+    $("telegramButton").addEventListener("click", () => {
+      const res = validate([
+        ...BASE_FIELDS,
+        { id: "account4", errId: "err-account4", test: (v) => /^\d{4}$/.test(v), msg: "Please enter the last 4 digits of your bank account (exactly 4 numbers)." }
+      ]);
+      if (res.first) return failValidation(res);
+
+      const v = res.values;
       const orderInfo = `Hi, I just paid for my LA SHAUNNIE order.%0A%0A` +
-        `Name: ${encodeURIComponent(name)}%0A` +
-        `Phone: ${encodeURIComponent(phone)}%0A` +
-        `Address: ${encodeURIComponent(address)}%0A` +
-        `Bank Last 4: ${encodeURIComponent(account4)}%0A` +
+        `Name: ${encodeURIComponent(v.name)}%0A` +
+        `Phone: ${encodeURIComponent(v.phone)}%0A` +
+        `Address: ${encodeURIComponent(v.address)}%0A` +
+        `Bank Last 4: ${encodeURIComponent(v.account4)}%0A` +
         `Quantity: ${quantity}%0A` +
-        `Total: ${document.getElementById('total').textContent}`;
+        `Total: ${totalEl.textContent}`;
 
       statusEl.textContent = "";
       window.open(`${TELEGRAM_URL}?text=${orderInfo}`, "_blank", "noopener,noreferrer");
     });
 
-    updateOrder();
+    // --- Other countries: NewebPay credit card ---
+    $("cardButton").addEventListener("click", async () => {
+      if (!quote) { statusEl.textContent = ""; return loadQuote(); }
+
+      const list = [...BASE_FIELDS,
+        { id: "postal", errId: "err-postal", test: (v) => v.length > 0, msg: "Please enter your postal code." }];
+      if (countryEl.value === "OTHER") {
+        list.push({ id: "otherCountry", errId: "err-otherCountry", test: (v) => v.length > 0, msg: "Please enter your country." });
+      }
+      const res = validate(list);
+      if (res.first) return failValidation(res);
+
+      if (quoteIsStale()) {
+        await loadQuote();
+        if (!quote) { statusEl.textContent = "Exchange rate is unavailable. Please try again."; return; }
+        statusEl.textContent = "Exchange rate refreshed. Please check the amount and tap pay again.";
+        return;
+      }
+
+      paying = true; renderCard();
+      statusEl.textContent = "Preparing secure payment…";
+      try {
+        const r = await fetch("/api/newebpay_checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: res.values.name,
+            phone: res.values.phone,
+            address: res.values.address,
+            postal: res.values.postal,
+            country: countryEl.value,
+            countryName: res.values.otherCountry || "",
+            quantity,
+            quote
+          })
+        });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          if (/rate/i.test(data.error || "")) { quote = null; loadQuote(); }
+          throw new Error(data.error || "Could not start payment. Please try again.");
+        }
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = data.action;
+        for (const [k, val] of Object.entries(data.fields)) {
+          const input = document.createElement("input");
+          input.type = "hidden"; input.name = k; input.value = val;
+          form.appendChild(input);
+        }
+        document.body.appendChild(form);
+        statusEl.textContent = "Redirecting to NewebPay…";
+        form.submit();
+      } catch (e) {
+        paying = false; renderCard();
+        statusEl.textContent = e.message || "Could not start payment. Please try again.";
+      }
+    });
+
+    // --- Return from NewebPay ---
+    (function showPaymentResult(){
+      const state = new URLSearchParams(location.search).get("payment");
+      if (!state) return;
+      const b = $("banner");
+      b.hidden = false;
+      if (state === "success") {
+        b.className = "banner ok";
+        b.textContent = "Payment received. Thank you! Your order is confirmed and we will arrange shipping soon.";
+      } else {
+        b.className = "banner fail";
+        b.textContent = "Payment was not completed. You have not been charged. Please try again.";
+      }
+      history.replaceState(null, "", location.pathname);
+    })();
+
+    renderCountry();
   </script>
+
 </body>
 </html>
