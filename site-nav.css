@@ -1,0 +1,9 @@
+/* Shared site menu: same look on every page */
+.site-nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:16px 28px;background:rgba(251,250,247,.94);backdrop-filter:blur(14px);border-bottom:1px solid #e8dfd3;font-family:"DM Sans",Arial,Helvetica,sans-serif}
+.site-nav .sn-logo{font-family:"Italiana",Georgia,serif;font-size:20px;letter-spacing:.18em;color:#34271d;text-decoration:none;white-space:nowrap}
+.site-nav .sn-links{display:flex;align-items:center;gap:26px}
+.site-nav .sn-links a{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#6d5949;text-decoration:none;white-space:nowrap;cursor:pointer}
+.site-nav .sn-links a:hover,.site-nav .sn-links a[aria-current="page"]{color:#34271d}
+.site-nav .sn-links a.sn-cta{padding:10px 18px;border:1px solid #b58d5b;color:#34271d}
+.site-nav .sn-links a.sn-cta:hover,.site-nav .sn-links a.sn-cta[aria-current="page"]{background:#c8a371}
+@media(max-width:720px){.site-nav{padding:12px 14px;gap:10px}.site-nav .sn-logo{font-size:15px;letter-spacing:.12em}.site-nav .sn-links{gap:12px}.site-nav .sn-links a{font-size:10px;letter-spacing:.06em}.site-nav .sn-links a.sn-cta{padding:7px 10px}}

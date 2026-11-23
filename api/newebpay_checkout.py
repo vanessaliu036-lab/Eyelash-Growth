@@ -15,8 +15,8 @@ import time
 
 sys.path.insert(0, os.path.dirname(__file__))
 from _lib import (
-    ORDERS_TABLE, airtable_create, find_or_create_customer, gen_order_id,
-    now_utc_iso, env,
+    ORDERS_TABLE, airtable_create, airtable_list, find_or_create_customer,
+    gen_order_id, now_utc_iso, env, formula_str,
 )
 from _newebpay import (
     COUNTRIES, MAX_QTY, encrypt_trade_info, gateway_url, shipping_usd,
@@ -26,6 +26,39 @@ from _newebpay import (
 
 class BadRequest(Exception):
     pass
+
+
+class TooMany(Exception):
+    pass
+
+
+# Abuse guard (stateless: counts recent unpaid card orders in Airtable).
+MAX_UNPAID_PER_PHONE = 3      # per phone number within the window
+MAX_UNPAID_GLOBAL = 30        # all card orders within the window
+WINDOW_MINUTES = 15
+
+
+def _recent_unpaid_filter(extra: str = "") -> str:
+    base = (
+        'AND({付款狀態}="未付款",FIND("[CARD",{地址}),'
+        f"IS_AFTER({{下單日期}},DATEADD(NOW(),-{WINDOW_MINUTES},'minutes'))"
+    )
+    return base + (("," + extra) if extra else "") + ")"
+
+
+def check_abuse(phone: str) -> None:
+    by_phone = airtable_list(
+        ORDERS_TABLE,
+        formula=_recent_unpaid_filter(f"{{電話}}={formula_str(phone)}"),
+        max_records=MAX_UNPAID_PER_PHONE,
+    )
+    if len(by_phone) >= MAX_UNPAID_PER_PHONE:
+        raise TooMany("too many unpaid attempts, please finish your payment or try again later")
+    overall = airtable_list(
+        ORDERS_TABLE, formula=_recent_unpaid_filter(), max_records=MAX_UNPAID_GLOBAL,
+    )
+    if len(overall) >= MAX_UNPAID_GLOBAL:
+        raise TooMany("service is busy, please try again in a few minutes")
 
 
 def _clean(v, limit):
@@ -47,8 +80,14 @@ class handler(BaseHTTPRequestHandler):
     def do_POST(self):
         try:
             length = int(self.headers.get("Content-Length", "0"))
+            if length > 8192:
+                raise BadRequest("request too large")
             raw = self.rfile.read(length).decode("utf-8", errors="replace")
             body = json.loads(raw) if raw else {}
+
+            # Honeypot: real visitors never fill this hidden field.
+            if _clean(body.get("website"), 50):
+                raise BadRequest("invalid request")
 
             name = _clean(body.get("name"), 120)
             phone = _clean(body.get("phone"), 40)
@@ -79,6 +118,8 @@ class handler(BaseHTTPRequestHandler):
             twd = usd_to_twd(usd, rate)
             ship = shipping_usd(code, qty)
             country_label = country_name if code == "OTHER" else COUNTRIES[code]["name"]
+
+            check_abuse(phone)
 
             # --- Airtable: customer + unpaid order -------------------------
             full_address = f"{address}, {postal}, {country_label}"
@@ -130,6 +171,8 @@ class handler(BaseHTTPRequestHandler):
             })
         except BadRequest as e:
             self._send(400, {"error": str(e)})
+        except TooMany as e:
+            self._send(429, {"error": str(e)})
         except Exception as e:
             print(f"[newebpay_checkout] ERROR: {e}", file=sys.stderr)
             self._send(500, {"error": "could not start payment, please try again"})

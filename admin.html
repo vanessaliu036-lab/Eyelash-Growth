@@ -24,10 +24,11 @@ td.col-id{font-family:"SF Mono",Menlo,monospace;font-size:11px}
 body{font-family:"Inter","PingFang TC","Microsoft JhengHei","Noto Sans TC",Arial,sans-serif}
 h1{font-family:"Bodoni Moda","Songti TC","Noto Serif TC","PMingLiU",Georgia,serif}
 </style>
+<link rel="stylesheet" href="/site-nav.css">
 </head>
 <body>
 <div id="banner" class="banner loading" style="display:none">載入中…</div>
-<header class="topbar"><div class="brand">LA SHAUNNIE<small>訂單管理</small></div><div class="admin-meta"><a href="index.html" class="nav-link">首頁</a><a href="order.html" class="nav-link">訂購頁面</a></div></header>
+<header class="site-nav"><a class="sn-logo" href="/">LA SHAUNNIE</a><nav class="sn-links" aria-label="Main menu"><a href="/">Home</a><a href="/order.html">Shop</a><a href="/partner.html" class="sn-cta">Become a Partner</a><a href="#" onclick="enableTelegramSecret();return false;">啟用 Telegram 驗證</a><a href="#" onclick="logout('');return false;">登出</a></nav></header>
 <main class="page">
 <section class="hero"><div><p class="eyebrow">睫毛精華訂單</p><h1>訂單管理</h1><p>查看顧客資料、核對付款並更新配送進度。</p></div><button class="primary-btn" onclick="exportOrders()">匯出訂單</button></section>
 <section class="stats">
@@ -52,11 +53,70 @@ h1{font-family:"Bodoni Moda","Songti TC","Noto Serif TC","PMingLiU",Georgia,seri
   </div>
 </div>
 <script>
-// Admin TG ID — set here. In production, prompt on first visit.
-const ADMIN_TG_ID = 6764901662;
+// Admin login: the secret is typed here, kept only in this tab (sessionStorage)
+// and sent as a Bearer token. It is never stored in the page or the repository.
+let ADMIN_TOKEN = "";
+try { ADMIN_TOKEN = sessionStorage.getItem("adminToken") || ""; } catch (e) {}
 let ALL_ORDERS = [];
+let REFRESH_TIMER = null;
 
 const $ = (id) => document.getElementById(id);
+
+function authHeaders(extra) {
+  return Object.assign({ "Authorization": "Bearer " + ADMIN_TOKEN }, extra || {});
+}
+
+function logout(msg) {
+  ADMIN_TOKEN = "";
+  try { sessionStorage.removeItem("adminToken"); } catch (e) {}
+  ALL_ORDERS = [];
+  $("ordersBody").innerHTML = "";
+  showLogin(msg || "");
+}
+
+function showLogin(msg) {
+  let box = $("loginBox");
+  if (!box) {
+    box = document.createElement("div");
+    box.id = "loginBox";
+    box.style.cssText = "position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:rgba(244,234,217,.97);padding:20px";
+    box.innerHTML = '<form id="loginForm" style="width:min(380px,100%);background:#fff;border:1px solid #dfd4c6;border-radius:18px;padding:28px;box-shadow:0 18px 55px rgba(60,42,26,.12)">' +
+      '<h2 style="margin:0 0 6px;font-size:22px">後台登入</h2>' +
+      '<p style="margin:0 0 16px;color:#7b746d;font-size:13px">請輸入管理密碼。</p>' +
+      '<input id="loginToken" type="password" autocomplete="current-password" placeholder="管理密碼" style="width:100%;padding:13px 14px;border:1px solid #dfd4c6;border-radius:12px;font:inherit">' +
+      '<p id="loginMsg" style="min-height:18px;margin:8px 0 0;color:#d92d20;font-size:12px;font-weight:600"></p>' +
+      '<button type="submit" style="width:100%;margin-top:8px;padding:13px;border:0;border-radius:12px;background:#8f745b;color:#fff;font:inherit;font-weight:700;cursor:pointer">登入</button></form>';
+    document.body.appendChild(box);
+    $("loginForm").addEventListener("submit", (ev) => {
+      ev.preventDefault();
+      const t = $("loginToken").value.trim();
+      if (!t) return;
+      ADMIN_TOKEN = t;
+      try { sessionStorage.setItem("adminToken", t); } catch (e) {}
+      $("loginToken").value = "";
+      box.style.display = "none";
+      loadOrders();
+    });
+  }
+  box.style.display = "grid";
+  $("loginMsg").textContent = msg || "";
+  setTimeout(() => $("loginToken").focus(), 50);
+}
+
+async function enableTelegramSecret() {
+  if (!confirm("啟用 Telegram 訂單通知的來源驗證？只需要做一次。")) return;
+  showBanner("設定中…");
+  try {
+    const res = await fetch("/api/admin/telegram_webhook", { method: "POST", headers: authHeaders() });
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 401 || res.status === 429) return logout(res.status === 429 ? "輸錯太多次，請 5 分鐘後再試" : "密碼錯誤或已失效");
+    if (!res.ok || !data.ok) { showBanner("設定失敗：" + (data.error || data.description || res.status), "error"); return; }
+    showBanner("已啟用 Telegram 來源驗證。", "loading");
+    setTimeout(hideBanner, 4000);
+  } catch (e) {
+    showBanner("錯誤：" + e.message, "error");
+  }
+}
 
 function showBanner(msg, kind) {
   const b = $("banner");
@@ -208,9 +268,10 @@ async function patchOrder(recId, body) {
   try {
     const res = await fetch(`/api/admin/orders?id=${encodeURIComponent(recId)}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json", "X-Telegram-User-Id": String(ADMIN_TG_ID) },
+      headers: authHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(body),
     });
+    if (res.status === 401 || res.status === 429) { logout(res.status === 429 ? "輸錯太多次，請 5 分鐘後再試" : "密碼錯誤或已失效"); return; }
     if (!res.ok) {
       const e = await res.json().catch(() => ({}));
       showBanner("更新失敗：" + (e.error || res.status), "error");
@@ -251,7 +312,11 @@ function exportOrders() {
       c[0].innerText, c[1].innerText.replace(/\n/g, " "), c[2].innerText.replace(/\n/g, " "),
       c[3].innerText, c[4].innerText, c[5].innerText, c[6].innerText, c[7].innerText,
       c[9].innerText, c[10].querySelector("select").value, c[11].innerText,
-    ].map(x => '"' + String(x).replace(/"/g, '""') + '"');
+    ].map(x => {
+      let v = String(x);
+      if (/^[=+\-@\t\r]/.test(v)) v = "'" + v;   // block spreadsheet formula injection
+      return '"' + v.replace(/"/g, '""') + '"';
+    });
     out.push(vals.join(","));
   });
   const b = new Blob(["\uFEFF" + out.join("\n")], { type: "text/csv;charset=utf-8" });
@@ -264,11 +329,11 @@ function exportOrders() {
 }
 
 async function loadOrders() {
+  if (!ADMIN_TOKEN) { showLogin(""); return; }
   showBanner("正在從 Airtable 讀取訂單…");
   try {
-    const res = await fetch("/api/admin/orders?stats=1", {
-      headers: { "X-Telegram-User-Id": String(ADMIN_TG_ID) },
-    });
+    const res = await fetch("/api/admin/orders?stats=1", { headers: authHeaders() });
+    if (res.status === 401 || res.status === 429) { logout(res.status === 429 ? "輸錯太多次，請 5 分鐘後再試" : (ADMIN_TOKEN ? "密碼錯誤或已失效" : "")); return; }
     if (!res.ok) {
       showBanner("API 錯誤：HTTP " + res.status, "error");
       return;
@@ -288,7 +353,7 @@ async function loadOrders() {
 });
 
 loadOrders();
-setInterval(loadOrders, 30000);  // auto-refresh every 30s
+setInterval(() => { if (ADMIN_TOKEN) loadOrders(); }, 30000);  // auto-refresh every 30s
 </script>
 </body>
 </html>

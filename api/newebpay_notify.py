@@ -10,7 +10,7 @@ import sys
 from urllib.parse import parse_qs
 
 sys.path.insert(0, os.path.dirname(__file__))
-from _lib import ORDERS_TABLE, airtable_list, airtable_update
+from _lib import ORDERS_TABLE, airtable_list, airtable_update, formula_str
 from _newebpay import (
     decrypt_trade_info, from_merchant_order_no, verify_trade_sha,
 )
@@ -55,8 +55,7 @@ class handler(BaseHTTPRequestHandler):
             if not order_id:
                 return self._ok()
 
-            safe = order_id.replace('"', "")
-            rows = airtable_list(ORDERS_TABLE, formula=f'{{訂單編號}}="{safe}"', max_records=1)
+            rows = airtable_list(ORDERS_TABLE, formula=f"{{訂單編號}}={formula_str(order_id)}", max_records=1)
             if not rows:
                 print(f"[newebpay_notify] order not found: {order_id}", file=sys.stderr)
                 return self._ok()

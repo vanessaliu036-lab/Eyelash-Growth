@@ -580,18 +580,13 @@
       .shipping-grid{grid-template-columns:1fr}
     }
   </style>
+<link rel="stylesheet" href="/site-nav.css">
 </head>
 
 <body>
   <main class="page">
     <div class="shell">
-      <header class="topbar">
-        <a href="index.html" class="brand" aria-label="LA SHAUNNIE home">
-          LA SHAUNNIE
-          <small>LASH</small>
-        </a>
-        <div class="top-label">Order Now</div>
-      </header>
+      <header class="site-nav"><a class="sn-logo" href="/">LA SHAUNNIE</a><nav class="sn-links" aria-label="Main menu"><a href="/">Home</a><a href="/order.html" aria-current="page">Shop</a><a href="/partner.html" class="sn-cta">Become a Partner</a></nav></header>
 
       <section class="layout">
         <div class="card form-card">
@@ -605,6 +600,10 @@
 
           <form id="orderForm" novalidate>
             <div class="field-grid">
+              <div style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden" aria-hidden="true">
+                <label for="website">Website</label>
+                <input id="website" type="text" tabindex="-1" autocomplete="off">
+              </div>
               <div>
                 <label for="name">Full Name <span class="required">*</span></label>
                 <input id="name" type="text" placeholder="Enter your full name" autocomplete="name" required>
@@ -978,6 +977,7 @@
             postal: res.values.postal,
             country: countryEl.value,
             countryName: res.values.otherCountry || "",
+            website: $("website").value,
             quantity,
             quote
           })

@@ -13,6 +13,7 @@ import json
 import sys
 import os
 import time
+import hmac
 
 # Make _lib importable
 sys.path.insert(0, os.path.dirname(__file__))
@@ -27,9 +28,30 @@ class handler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):  # silence default access log
         return
 
+    def _from_telegram(self) -> bool:
+        """Verify Telegram's secret header once TELEGRAM_WEBHOOK_SECRET is set.
+
+        Until the secret is registered with Telegram (see
+        api/admin/telegram_webhook.py) the check is skipped so the bot keeps
+        working; once set, requests without the right header are rejected.
+        """
+        secret = os.environ.get("TELEGRAM_WEBHOOK_SECRET", "").strip()
+        if not secret:
+            print("[webhook_telegram] WARNING: TELEGRAM_WEBHOOK_SECRET not set — "
+                  "requests are not verified", file=sys.stderr)
+            return True
+        got = self.headers.get("X-Telegram-Bot-Api-Secret-Token", "")
+        return hmac.compare_digest(got.encode("utf-8"), secret.encode("utf-8"))
+
     def do_POST(self):
+        if not self._from_telegram():
+            self.send_response(403)
+            self.end_headers()
+            return
         try:
             length = int(self.headers.get("Content-Length", "0"))
+            if length > 1_000_000:
+                return self._ok()
             raw = self.rfile.read(length).decode("utf-8", errors="replace")
             update = json.loads(raw) if raw else {}
 

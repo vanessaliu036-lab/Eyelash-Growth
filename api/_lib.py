@@ -29,6 +29,30 @@ def env(name: str) -> str:
     return v
 
 
+def formula_str(value: Any) -> str:
+    """Quote a value as an Airtable formula string literal (injection-safe)."""
+    s = str(value if value is not None else "")
+    s = s.replace("\\", "\\\\").replace('"', '\\"')
+    s = s.replace("\r", " ").replace("\n", " ")
+    return '"' + s + '"'
+
+
+def bearer_token_ok(auth_header: str, env_name: str = "ADMIN_TOKEN") -> bool:
+    """Constant-time check of 'Authorization: Bearer <token>' against an env secret.
+
+    Fails closed: if the env var is unset/empty, nothing is accepted.
+    """
+    import hmac
+    expected = os.environ.get(env_name, "").strip()
+    if len(expected) < 4:
+        return False
+    header = (auth_header or "").strip()
+    if not header.lower().startswith("bearer "):
+        return False
+    provided = header[7:].strip()
+    return hmac.compare_digest(provided.encode("utf-8"), expected.encode("utf-8"))
+
+
 def now_utc_iso() -> str:
     return dt.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
 
@@ -47,7 +71,9 @@ def http_json(method: str, url: str, headers: dict, body: Any = None,
             return json.loads(resp.read().decode("utf-8"))
     except HTTPError as e:
         body = e.read().decode("utf-8", errors="replace")
-        raise RuntimeError(f"{method} {url} -> {e.code}: {body[:300]}")
+        # Never leak the Telegram bot token (it is part of the URL) into logs.
+        safe_url = re.sub(r"/(file/)?bot[^/]+/", r"/\1bot***/", url)
+        raise RuntimeError(f"{method} {safe_url} -> {e.code}: {body[:300]}")
 
 
 def http_download(url: str, timeout: int = 20) -> bytes:
@@ -126,7 +152,7 @@ def find_latest_order_by_tg_user(tg_user_id: int, payment_status: str = "未付�
     Default: '未付款' — i.e. orders still waiting for a payment screenshot."""
     rows = airtable_list(
         ORDERS_TABLE,
-        formula=f"AND({{TG 用戶 ID}}={int(tg_user_id)},{{付款狀態}}=\"{payment_status}\")",
+        formula=f"AND({{TG 用戶 ID}}={int(tg_user_id)},{{付款狀態}}={formula_str(payment_status)})",
         max_records=5,
     )
     if not rows:
@@ -182,11 +208,9 @@ def parse_order_message(text: str) -> Optional[dict]:
 
 def find_or_create_customer(name: str, phone: str, address: str) -> str:
     """Return customer record id. Update address if existing record is found."""
-    # Escape single quotes in formula
-    safe_phone = phone.replace("'", "\\'")
     rows = airtable_list(
         CUSTOMERS_TABLE,
-        formula=f"{{電話}}='{safe_phone}'",
+        formula=f"{{電話}}={formula_str(phone)}",
         max_records=1,
     )
     if rows:
@@ -221,3 +245,35 @@ def create_order_record(customer_id: str, order: dict, tg_user_id: int,
         "付款狀態": "未付款",
         "出貨狀態": "待出貨",
     })
+
+
+# ---- admin login throttle (best effort: memory of one serverless instance) ----
+_FAILS = {}
+_MAX_FAILS = 5
+_LOCK_SECONDS = 300      # 5 minutes while testing; raise later
+
+
+def client_ip(headers) -> str:
+    fwd = (headers.get("X-Forwarded-For") or "").split(",")[0].strip()
+    return fwd or (headers.get("X-Real-Ip") or "unknown")
+
+
+def admin_auth(headers, env_name: str = "ADMIN_TOKEN"):
+    """Return (ok, status). status: 200 ok, 401 wrong/missing, 429 locked."""
+    import time
+    ip = client_ip(headers)
+    now = time.time()
+    count, until = _FAILS.get(ip, (0, 0))
+    if until > now:
+        return False, 429
+    if bearer_token_ok(headers.get("Authorization", ""), env_name):
+        _FAILS.pop(ip, None)
+        return True, 200
+    if (headers.get("Authorization") or "").strip():      # only wrong guesses count
+        count += 1
+        until = now + _LOCK_SECONDS if count >= _MAX_FAILS else 0
+        _FAILS[ip] = (0 if until else count, until)
+        if len(_FAILS) > 5000:
+            _FAILS.clear()
+        time.sleep(0.6)                                    # slow down guessing
+    return False, 401

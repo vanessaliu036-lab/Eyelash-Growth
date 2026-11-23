@@ -4,8 +4,8 @@ GET  /api/admin/orders            -> list all orders (most recent first)
 GET  /api/admin/orders?stats=1    -> also include stat aggregates
 PATCH /api/admin/orders?id=<rec>  -> update payment / shipping status
 
-Auth: caller must include X-Telegram-User-Id header matching
-ADMIN_TG_IDS (comma-separated Vercel env var). Returns 401 otherwise.
+Auth: caller must send "Authorization: Bearer <ADMIN_TOKEN>" (secret kept in
+the Vercel env var ADMIN_TOKEN). Returns 401 otherwise.
 """
 from http.server import BaseHTTPRequestHandler
 import json
@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from _lib import (
     env, airtable_headers, airtable_list, airtable_update,
     http_json, AIRTABLE_API, ORDERS_TABLE, CUSTOMERS_TABLE,
-    tg_send,
+    tg_send, admin_auth, formula_str,
 )
 from urllib.parse import urlparse, parse_qs
 
@@ -27,7 +27,7 @@ def _customer_map(customer_ids: list) -> dict:
     if not customer_ids:
         return {}
     # Airtable formula: OR(RECORD_ID()='x', RECORD_ID()='y', ...)
-    parts = ",".join(f"RECORD_ID()='{cid}'" for cid in customer_ids)
+    parts = ",".join(f"RECORD_ID()={formula_str(cid)}" for cid in customer_ids)
     formula = f"OR({parts})"
     rows = airtable_list(CUSTOMERS_TABLE, formula=formula, max_records=50)
     return {r["id"]: r.get("fields", {}) for r in rows}
@@ -77,42 +77,29 @@ class handler(BaseHTTPRequestHandler):
         data = json.dumps(body, ensure_ascii=False).encode("utf-8")
         self.send_response(code)
         self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, X-Telegram-User-Id")
-        self.send_header("Access-Control-Allow-Methods", "GET, PATCH, OPTIONS")
+        # Same-origin only: no CORS headers, never cache customer data.
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("X-Robots-Tag", "noindex")
         self.end_headers()
         self.wfile.write(data)
 
     def _check_auth(self) -> bool:
-        """Return True if requester is in ADMIN_TG_IDS (comma-separated env).
+        """Require 'Authorization: Bearer <ADMIN_TOKEN>' (constant-time compare).
 
-        Compares X-Telegram-User-Id header against the allowlist. If
-        ADMIN_TG_IDS is unset or empty, every request is rejected — fail
-        closed.
+        ADMIN_TOKEN is a long random secret kept only in Vercel env. If it is
+        unset or too short every request is rejected (fail closed).
         """
-        allowed_raw = os.environ.get("ADMIN_TG_IDS", "").strip()
-        if not allowed_raw:
-            print("[admin/orders] ADMIN_TG_IDS env not set — rejecting",
-                  file=sys.stderr)
-            return False
-        try:
-            allowed = {int(x.strip()) for x in allowed_raw.split(",") if x.strip()}
-        except ValueError:
-            print(f"[admin/orders] bad ADMIN_TG_IDS value: {allowed_raw!r}",
-                  file=sys.stderr)
-            return False
-        header = self.headers.get("X-Telegram-User-Id", "").strip()
-        try:
-            return int(header) in allowed
-        except ValueError:
-            return False
+        ok, self._auth_status = admin_auth(self.headers)
+        if not ok:
+            print("[admin/orders] unauthorized request", file=sys.stderr)
+        return ok
 
     def do_OPTIONS(self):
         self._send_json(204, {})
 
     def do_GET(self):
         if not self._check_auth():
-            return self._send_json(401, {"error": "unauthorized"})
+            return self._send_json(self._auth_status, {"error": "unauthorized" if self._auth_status == 401 else "too many attempts, try later"})
         try:
             url = urlparse(self.path)
             q = parse_qs(url.query)
@@ -142,11 +129,11 @@ class handler(BaseHTTPRequestHandler):
             return self._send_json(200, out)
         except Exception as e:
             print(f"[admin/orders] GET err: {e}", file=sys.stderr)
-            return self._send_json(500, {"error": str(e)})
+            return self._send_json(500, {"error": "server error"})
 
     def do_PATCH(self):
         if not self._check_auth():
-            return self._send_json(401, {"error": "unauthorized"})
+            return self._send_json(self._auth_status, {"error": "unauthorized" if self._auth_status == 401 else "too many attempts, try later"})
         try:
             url = urlparse(self.path)
             q = parse_qs(url.query)
@@ -190,7 +177,7 @@ class handler(BaseHTTPRequestHandler):
             })
         except Exception as e:
             print(f"[admin/orders] PATCH err: {e}", file=sys.stderr)
-            return self._send_json(500, {"error": str(e)})
+            return self._send_json(500, {"error": "server error"})
 
     def _maybe_notify(self, rec_id, updated_fields, body):
         """Push TG if payment or shipping just flipped to a milestone."""
