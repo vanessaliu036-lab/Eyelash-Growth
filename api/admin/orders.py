@@ -17,9 +17,12 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from _lib import (
     env, airtable_headers, airtable_list, airtable_update,
     http_json, AIRTABLE_API, ORDERS_TABLE, CUSTOMERS_TABLE,
-    tg_send, admin_auth, formula_str,
+    tg_send, admin_auth, formula_str, airtable_list_sorted, airtable_get,
 )
+import re
 from urllib.parse import urlparse, parse_qs
+
+REC_ID_RE = re.compile(r"rec[A-Za-z0-9]{14}")
 
 
 def _customer_map(customer_ids: list) -> dict:
@@ -27,10 +30,14 @@ def _customer_map(customer_ids: list) -> dict:
     if not customer_ids:
         return {}
     # Airtable formula: OR(RECORD_ID()='x', RECORD_ID()='y', ...)
-    parts = ",".join(f"RECORD_ID()={formula_str(cid)}" for cid in customer_ids)
-    formula = f"OR({parts})"
-    rows = airtable_list(CUSTOMERS_TABLE, formula=formula, max_records=50)
-    return {r["id"]: r.get("fields", {}) for r in rows}
+    out = {}
+    ids = [c for c in customer_ids if REC_ID_RE.fullmatch(str(c))]
+    for i in range(0, len(ids), 40):          # chunks keep the formula short
+        chunk = ids[i:i + 40]
+        parts = ",".join(f"RECORD_ID()={formula_str(cid)}" for cid in chunk)
+        rows = airtable_list(CUSTOMERS_TABLE, formula=f"OR({parts})", max_records=len(chunk))
+        out.update({r["id"]: r.get("fields", {}) for r in rows})
+    return out
 
 
 def _shape_order(rec: dict, customers: dict) -> dict:
@@ -95,7 +102,9 @@ class handler(BaseHTTPRequestHandler):
         return ok
 
     def do_OPTIONS(self):
-        self._send_json(204, {})
+        self.send_response(204)
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
 
     def do_GET(self):
         if not self._check_auth():
@@ -104,9 +113,8 @@ class handler(BaseHTTPRequestHandler):
             url = urlparse(self.path)
             q = parse_qs(url.query)
 
-            rows = airtable_list(ORDERS_TABLE, max_records=100)
-            # Sort by 下單日期 desc, fallback to record id
-            rows.sort(key=lambda r: r.get("fields", {}).get("下單日期", ""), reverse=True)
+            # Newest first, paginated (Airtable returns max 100 per page).
+            rows = airtable_list_sorted(ORDERS_TABLE, "下單日期", limit=500)
             cust_ids = []
             for r in rows:
                 cust_ids.extend(r.get("fields", {}).get("客戶", []))
@@ -138,8 +146,8 @@ class handler(BaseHTTPRequestHandler):
             url = urlparse(self.path)
             q = parse_qs(url.query)
             rec_id = (q.get("id") or [""])[0]
-            if not rec_id:
-                return self._send_json(400, {"error": "missing id"})
+            if not REC_ID_RE.fullmatch(rec_id):
+                return self._send_json(400, {"error": "invalid id"})
 
             length = int(self.headers.get("Content-Length", "0"))
             raw = self.rfile.read(length).decode("utf-8", errors="replace")
@@ -222,11 +230,7 @@ class handler(BaseHTTPRequestHandler):
 
     def _append_notify_note(self, rec_id, mark):
         try:
-            target = None
-            for r in airtable_list(ORDERS_TABLE, max_records=100):
-                if r["id"] == rec_id:
-                    target = r
-                    break
+            target = airtable_get(ORDERS_TABLE, rec_id)
             cur = (target.get("fields", {}).get("備註") if target else "") or ""
             if mark in cur:
                 return

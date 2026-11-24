@@ -64,7 +64,7 @@ class handler(BaseHTTPRequestHandler):
             fields = rec.get("fields", {})
             if fields.get("付款狀態") == "已付款":
                 return self._ok()
-            if f"[CARD NT${amt}]" not in str(fields.get("地址", "")):
+            if not str(fields.get("地址", "")).startswith(f"[CARD NT${amt}] "):
                 print(f"[newebpay_notify] amount mismatch for {order_id}: {amt}", file=sys.stderr)
                 return self._ok()
 

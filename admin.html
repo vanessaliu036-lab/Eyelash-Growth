@@ -28,7 +28,7 @@ h1{font-family:"Bodoni Moda","Songti TC","Noto Serif TC","PMingLiU",Georgia,seri
 </head>
 <body>
 <div id="banner" class="banner loading" style="display:none">載入中…</div>
-<header class="site-nav"><a class="sn-logo" href="/">LA SHAUNNIE</a><nav class="sn-links" aria-label="Main menu"><a class="sn-opt" href="/#story">Story</a><a class="sn-opt" href="/#cycle">Growth cycle</a><a class="sn-opt" href="/#ingredients">Ingredients</a><a class="sn-opt" href="/#routine">How to use</a><a href="/order.html">Shop</a><a href="/partner.html" class="sn-cta">Become a Partner</a><a href="#" onclick="enableTelegramSecret();return false;">啟用 Telegram 驗證</a><a href="#" onclick="logout('');return false;">登出</a></nav></header>
+<header class="site-nav"><a class="sn-logo" href="/">LA SHAUNNIE</a><nav class="sn-links" aria-label="Main menu"><a href="/">Home</a><a href="#" onclick="enableTelegramSecret();return false;">啟用 Telegram 驗證</a><a href="#" onclick="logout('');return false;">登出</a></nav></header>
 <main class="page">
 <section class="hero"><div><p class="eyebrow">睫毛精華訂單</p><h1>訂單管理</h1><p>查看顧客資料、核對付款並更新配送進度。</p></div><button class="primary-btn" onclick="exportOrders()">匯出訂單</button></section>
 <section class="stats">
@@ -303,17 +303,18 @@ function closeModal(ev) {
 }
 
 function exportOrders() {
-  const visible = [...document.querySelectorAll("#ordersBody tr")].filter(r => r.style.display !== "none");
-  const head = ["訂單編號", "訂購日期", "顧客", "TG 使用者 ID", "電話", "地址", "數量", "金額", "付款狀態", "配送狀態", "備註"];
+  const rows = [...document.querySelectorAll("#ordersBody tr")];
+  const head = ["訂單編號", "訂購日期", "顧客", "TG 使用者 ID", "電話", "地址", "數量", "金額(USD)", "帳號末四碼", "付款狀態", "出貨狀態", "物流單號"];
   const out = [head.join(",")];
-  visible.forEach(r => {
-    const c = [...r.querySelectorAll("td")];
+  rows.forEach((r, i) => {
+    if (r.style.display === "none") return;
+    const o = ALL_ORDERS[i];
+    if (!o) return;
     const vals = [
-      c[0].innerText, c[1].innerText.replace(/\n/g, " "), c[2].innerText.replace(/\n/g, " "),
-      c[3].innerText, c[4].innerText, c[5].innerText, c[6].innerText, c[7].innerText,
-      c[9].innerText, c[10].querySelector("select").value, c[11].innerText,
+      o.order_id, o.order_date, o.customer_name, o.tg_user_id || "", o.customer_phone, o.customer_address,
+      o.quantity, Number(o.amount || 0).toFixed(2), o.account4, o.payment_status, o.shipping_status, o.tracking_number,
     ].map(x => {
-      let v = String(x);
+      let v = String(x == null ? "" : x);
       if (/^[=+\-@\t\r]/.test(v)) v = "'" + v;   // block spreadsheet formula injection
       return '"' + v.replace(/"/g, '""') + '"';
     });

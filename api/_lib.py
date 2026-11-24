@@ -113,6 +113,33 @@ def airtable_list(table: str, formula: Optional[str] = None, max_records: int = 
     return data.get("records", [])
 
 
+def airtable_list_sorted(table: str, sort_field: str, limit: int = 500,
+                         formula: Optional[str] = None, direction: str = "desc") -> List[dict]:
+    """Newest-first listing with real pagination (Airtable returns 100/page)."""
+    out: List[dict] = []
+    offset = None
+    while len(out) < limit:
+        params: dict[str, Any] = {
+            "pageSize": min(100, limit - len(out)),
+            "sort[0][field]": sort_field,
+            "sort[0][direction]": direction,
+        }
+        if formula:
+            params["filterByFormula"] = formula
+        if offset:
+            params["offset"] = offset
+        data = http_json("GET", f"{AIRTABLE_API}/{BASE_ID}/{table}?{urlencode(params)}", airtable_headers())
+        out.extend(data.get("records", []))
+        offset = data.get("offset")
+        if not offset:
+            break
+    return out[:limit]
+
+
+def airtable_get(table: str, record_id: str) -> dict:
+    return http_json("GET", f"{AIRTABLE_API}/{BASE_ID}/{table}/{record_id}", airtable_headers())
+
+
 def airtable_create(table: str, fields: dict) -> dict:
     url = f"{AIRTABLE_API}/{BASE_ID}/{table}"
     return http_json("POST", url, airtable_headers(), {"fields": fields})
